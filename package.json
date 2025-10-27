@@ -1,7 +1,7 @@
 {
-  "name": "mixtape-metamorphosis",
+  "name": "metamorphic-mixtape",
   "version": "1.0.0",
-  "description": "Skeptical Wombat's Mixtape & Metamorphosis - AI-powered MCP server for Suno songwriting workflows",
+  "description": "Skeptical Wombat's Metamorphic Mixtape - AI-powered MCP server for Suno songwriting workflows",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {

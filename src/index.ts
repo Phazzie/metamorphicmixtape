@@ -10,7 +10,7 @@ import { registerCollaborationTools } from './tools/collaboration.js';
 import { logger } from './utils/logger.js';
 
 /**
- * Skeptical Wombat's Mixtape & Metamorphosis
+ * Skeptical Wombat's Metamorphic Mixtape
  * AI-Powered Songwriting Assistant
  * 
  * This server provides intelligent tools for songwriting workflows with Suno AI,
@@ -19,10 +19,10 @@ import { logger } from './utils/logger.js';
 
 async function main() {
   try {
-    logger.info('Starting Mixtape & Metamorphosis MCP Server...');
+    logger.info('Starting Metamorphic Mixtape MCP Server...');
     
     const server = new McpServer({
-      name: 'mixtape-metamorphosis',
+      name: 'metamorphic-mixtape',
       version: '1.0.0'
     });
 
@@ -39,8 +39,8 @@ async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
     
-    logger.info('Mixtape & Metamorphosis MCP Server running on stdio');
-    console.error('Mixtape & Metamorphosis MCP Server running on stdio');
+    logger.info('Metamorphic Mixtape MCP Server running on stdio');
+    console.error('Metamorphic Mixtape MCP Server running on stdio');
   } catch (error) {
     logger.error('Failed to start server', error as Error);
     throw error;
@@ -50,7 +50,7 @@ async function main() {
 // Handle cleanup
 process.on('SIGINT', () => {
   logger.info('Received SIGINT, shutting down gracefully...');
-  console.error('Shutting down Mixtape & Metamorphosis MCP Server');
+  console.error('Shutting down Metamorphic Mixtape MCP Server');
   process.exit(0);
 });
 
@@ -66,7 +66,7 @@ process.on('unhandledRejection', (reason, promise) => {
 
 // Start the server
 main().catch((error) => {
-  logger.error('Failed to start Mixtape & Metamorphosis MCP Server', error);
-  console.error('Failed to start Mixtape & Metamorphosis MCP Server:', error);
+  logger.error('Failed to start Metamorphic Mixtape MCP Server', error);
+  console.error('Failed to start Metamorphic Mixtape MCP Server:', error);
   process.exit(1);
 });
