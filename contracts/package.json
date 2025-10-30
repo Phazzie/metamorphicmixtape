@@ -1,0 +1,48 @@
+{
+  "name": "@metamorphic/mixtape-contracts",
+  "version": "1.0.0",
+  "description": "Shared Zod contracts for Metamorphic Mixtape MCP tools",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./shared": {
+      "types": "./dist/shared.d.ts",
+      "default": "./dist/shared.js"
+    },
+    "./songwriting": {
+      "types": "./dist/songwriting.d.ts",
+      "default": "./dist/songwriting.js"
+    },
+    "./analysis": {
+      "types": "./dist/analysis.d.ts",
+      "default": "./dist/analysis.js"
+    },
+    "./meta": {
+      "types": "./dist/meta.d.ts",
+      "default": "./dist/meta.js"
+    },
+    "./suno": {
+      "types": "./dist/suno.d.ts",
+      "default": "./dist/suno.js"
+    },
+    "./collaboration": {
+      "types": "./dist/collaboration.d.ts",
+      "default": "./dist/collaboration.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "zod": "^3.22.0"
+  }
+}

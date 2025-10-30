@@ -1,5 +1,14 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { z } from 'zod';
+import {
+  generateLyricsContractV1,
+  type GenerateLyricsInputV1,
+  refineLyricsContractV1,
+  type RefineLyricsInputV1,
+  songwritingCouncilContractV1,
+  type SongwritingCouncilInputV1,
+  devilsAdvocateContractV1,
+  type DevilsAdvocateInputV1
+} from '@metamorphic/mixtape-contracts/songwriting';
 
 /**
  * Core Songwriting Tools
@@ -16,35 +25,10 @@ export async function registerSongwritingTools(server: McpServer) {
     {
       title: 'Generate Song Lyrics',
       description: 'Create original song lyrics from a concept, theme, or story using AI-powered creative writing',
-      inputSchema: {
-        concept: z.string().describe(
-          'The core idea, theme, or story to write about. Can be abstract (e.g., "loneliness in cities") or specific (e.g., "watching my grandmother forget who I am")'
-        ),
-        style: z.enum(['verse-chorus', 'narrative', 'abstract', 'free-form']).default('verse-chorus').describe(
-          'Song structure style: verse-chorus (traditional), narrative (storytelling), abstract (experimental), free-form (no fixed structure)'
-        ),
-        tone: z.enum(['melancholic', 'uplifting', 'angry', 'reflective', 'playful', 'dark', 'hopeful', 'bittersweet']).describe(
-          'Emotional tone to establish throughout the song'
-        ),
-        length: z.enum(['short', 'medium', 'long']).default('medium').describe(
-          'Target length: short (2-3 verses), medium (3-4 verses + bridge), long (4+ verses, multiple bridges)'
-        ),
-        constraints: z.string().optional().describe(
-          'Optional creative constraints (e.g., "use water imagery", "no rhyming", "all questions")'
-        ),
-        reference_style: z.string().optional().describe(
-          'Optional: reference artist/song style to emulate (e.g., "Leonard Cohen storytelling", "Bon Iver abstraction")'
-        )
-      },
-      outputSchema: {
-        lyrics: z.string().describe('Complete generated lyrics with structure markers'),
-        structure: z.string().describe('Song structure breakdown (e.g., "V1-C-V2-C-B-C")'),
-        creative_notes: z.string().describe('Explanation of creative choices made'),
-        emotional_arc: z.string().describe('Description of the emotional journey in the song'),
-        suggested_refinements: z.array(z.string()).describe('Ideas for further refinement')
-      }
+      inputSchema: generateLyricsContractV1.raw.input,
+      outputSchema: generateLyricsContractV1.raw.output
     },
-    async ({ concept, style, tone, length, constraints, reference_style }) => {
+    async ({ concept, style, tone, length, constraints, reference_style }: GenerateLyricsInputV1) => {
       const prompt = `You are an expert songwriter creating original, emotionally resonant lyrics.
 
 CONCEPT: ${concept}
@@ -117,33 +101,10 @@ Focus on creating something that feels true, not just technically correct. Take 
     {
       title: 'Refine Lyrics',
       description: 'Improve and polish existing lyrics with AI-powered analysis and refinement focused on specific areas',
-      inputSchema: {
-        lyrics: z.string().describe('The lyrics to refine and improve'),
-        focus_areas: z.array(
-          z.enum(['rhythm', 'imagery', 'emotional_impact', 'clarity', 'structure', 'word_choice', 'transitions', 'memorability'])
-        ).describe('Specific areas to focus refinement on'),
-        keep_structure: z.boolean().default(true).describe(
-          'Whether to maintain the existing verse/chorus structure or allow restructuring'
-        ),
-        intensity: z.enum(['light', 'moderate', 'heavy']).default('moderate').describe(
-          'How extensively to revise: light (polish), moderate (improve), heavy (reimagine)'
-        ),
-        preserve_lines: z.array(z.string()).optional().describe(
-          'Specific lines that must remain unchanged (user favorites)'
-        )
-      },
-      outputSchema: {
-        refined_lyrics: z.string().describe('Improved version of the lyrics'),
-        changes_made: z.array(z.object({
-          original: z.string(),
-          revised: z.string(),
-          reason: z.string()
-        })).describe('List of changes with explanations'),
-        overall_assessment: z.string().describe('Overall evaluation of improvements made'),
-        further_suggestions: z.array(z.string()).describe('Additional ideas for refinement')
-      }
+      inputSchema: refineLyricsContractV1.raw.input,
+      outputSchema: refineLyricsContractV1.raw.output
     },
-    async ({ lyrics, focus_areas, keep_structure, intensity, preserve_lines }) => {
+    async ({ lyrics, focus_areas, keep_structure, intensity, preserve_lines }: RefineLyricsInputV1) => {
       const prompt = `You are an expert lyric editor helping to refine and improve song lyrics.
 
 ORIGINAL LYRICS:
@@ -220,30 +181,10 @@ Be respectful of the original work while making it genuinely better. Balance cra
     {
       title: 'Songwriting Council',
       description: 'Get feedback from multiple creative personas (perfectionist, experimentalist, storyteller, etc.) to see different perspectives on your work',
-      inputSchema: {
-        lyrics: z.string().describe('The lyrics to get feedback on'),
-        concept: z.string().optional().describe('Optional: the concept/story behind the song for context'),
-        personas: z.array(
-          z.enum(['perfectionist', 'experimentalist', 'storyteller', 'minimalist', 'maximalist', 'audience_advocate'])
-        ).default(['perfectionist', 'experimentalist', 'storyteller']).describe(
-          'Which creative personas to include in the council (choose 2-4 for best results)'
-        ),
-        question: z.string().optional().describe(
-          'Optional: specific question to ask the council (e.g., "Is the bridge too long?")'
-        )
-      },
-      outputSchema: {
-        perspectives: z.array(z.object({
-          persona: z.string(),
-          feedback: z.string(),
-          suggestions: z.array(z.string())
-        })).describe('Feedback from each persona'),
-        consensus_points: z.array(z.string()).describe('What multiple personas agreed on'),
-        conflicts: z.array(z.string()).describe('Where personas disagreed (opportunities for choice)'),
-        synthesis: z.string().describe('Overall synthesis of the council\'s wisdom')
-      }
+      inputSchema: songwritingCouncilContractV1.raw.input,
+      outputSchema: songwritingCouncilContractV1.raw.output
     },
-    async ({ lyrics, concept, personas, question }) => {
+    async ({ lyrics, concept, personas, question }: SongwritingCouncilInputV1) => {
       const personaDescriptions: Record<string, string> = {
         perfectionist: 'Focus on technical craft, precision, and polish. Notice every detail.',
         experimentalist: 'Push for creative risks, unconventional choices, and boundary-breaking.',
@@ -338,32 +279,10 @@ Make each persona's voice distinct and authentic. They should sometimes disagree
     {
       title: "Devil's Advocate",
       description: 'Get tough, challenging questions and critique to push your work deeper. Identifies weak points and hidden opportunities.',
-      inputSchema: {
-        lyrics: z.string().describe('The lyrics to challenge and question'),
-        concept: z.string().optional().describe('Optional: the intended concept or message'),
-        challenge_level: z.enum(['gentle', 'moderate', 'intense']).default('moderate').describe(
-          'How aggressively to challenge: gentle (supportive questioning), moderate (constructive critique), intense (deep probing)'
-        ),
-        focus: z.enum(['concept', 'execution', 'both']).default('both').describe(
-          'What to challenge: the core concept, the execution of the concept, or both'
-        )
-      },
-      outputSchema: {
-        challenging_questions: z.array(z.object({
-          question: z.string(),
-          why_it_matters: z.string()
-        })).describe('Tough questions that push deeper'),
-        potential_weak_points: z.array(z.object({
-          issue: z.string(),
-          why_problematic: z.string(),
-          how_to_address: z.string()
-        })).describe('Areas that might not be working'),
-        hidden_opportunities: z.array(z.string()).describe('What could be explored more deeply'),
-        alternative_approaches: z.array(z.string()).describe('Different angles to consider'),
-        final_challenge: z.string().describe('The biggest, most important question to answer')
-      }
+      inputSchema: devilsAdvocateContractV1.raw.input,
+      outputSchema: devilsAdvocateContractV1.raw.output
     },
-    async ({ lyrics, concept, challenge_level, focus }) => {
+    async ({ lyrics, concept, challenge_level, focus }: DevilsAdvocateInputV1) => {
       const intensityGuidance: Record<string, string> = {
         gentle: 'Be supportive while asking thoughtful questions. Frame challenges as opportunities.',
         moderate: 'Be direct and honest. Ask tough questions while remaining constructive.',

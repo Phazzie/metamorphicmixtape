@@ -1,5 +1,14 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { z } from 'zod';
+import {
+  formatForSunoContractV1,
+  type FormatForSunoInputV1,
+  generateSunoTagsContractV1,
+  type GenerateSunoTagsInputV1,
+  optimizeSunoPromptContractV1,
+  type OptimizeSunoPromptInputV1,
+  analyzeSunoOutputContractV1,
+  type AnalyzeSunoOutputInputV1
+} from '@metamorphic/mixtape-contracts/suno';
 
 /**
  * Suno-Specific Tools
@@ -16,26 +25,10 @@ export async function registerSunoTools(server: McpServer) {
     {
       title: 'Format for Suno',
       description: 'Convert lyrics to Suno-ready format with proper structure markers and optimization for best generation results',
-      inputSchema: {
-        lyrics: z.string().describe('The lyrics to format for Suno'),
-        style_tags: z.array(z.string()).optional().describe(
-          'Optional: pre-selected style tags (genre, mood, etc.)'
-        ),
-        structure_explicit: z.boolean().default(true).describe(
-          'Whether to include explicit structure markers like [Verse 1], [Chorus], etc.'
-        ),
-        optimize_for: z.enum(['clarity', 'creativity', 'balanced']).default('balanced').describe(
-          'Optimization focus: clarity (predictable results), creativity (experimental), balanced (best of both)'
-        )
-      },
-      outputSchema: {
-        formatted_lyrics: z.string().describe('Suno-ready lyrics with proper markers and formatting'),
-        structure_markers: z.array(z.string()).describe('List of structure markers used'),
-        formatting_notes: z.string().describe('Explanation of formatting choices made'),
-        suno_best_practices: z.array(z.string()).describe('Suno-specific tips applied')
-      }
+      inputSchema: formatForSunoContractV1.raw.input,
+      outputSchema: formatForSunoContractV1.raw.output
     },
-    async ({ lyrics, style_tags, structure_explicit, optimize_for }) => {
+    async ({ lyrics, style_tags, structure_explicit, optimize_for }: FormatForSunoInputV1) => {
       const prompt = `You are a Suno AI formatting expert. Format these lyrics for optimal Suno generation.
 
 LYRICS TO FORMAT:
@@ -105,33 +98,10 @@ Make this ready to copy-paste directly into Suno.`;
     {
       title: 'Generate Suno Tags',
       description: 'Analyze lyrics and creative intent to generate optimal Suno style/genre tags for desired musical results',
-      inputSchema: {
-        lyrics: z.string().describe('The lyrics to analyze for tag generation'),
-        intended_genre: z.string().optional().describe(
-          'Optional: intended genre (e.g., "indie folk", "synthwave", "jazz")'
-        ),
-        intended_mood: z.string().optional().describe(
-          'Optional: intended mood/feeling (e.g., "melancholic", "uplifting", "dark")'
-        ),
-        reference_artists: z.array(z.string()).optional().describe(
-          'Optional: artists whose style to emulate (e.g., ["Bon Iver", "Sufjan Stevens"])'
-        ),
-        specific_requests: z.string().optional().describe(
-          'Optional: specific musical elements wanted (e.g., "prominent piano", "electronic drums")'
-        )
-      },
-      outputSchema: {
-        primary_tags: z.array(z.string()).describe('Core tags that define the style'),
-        secondary_tags: z.array(z.string()).describe('Supporting tags for nuance'),
-        tag_explanation: z.string().describe('Why these tags were chosen'),
-        alternative_tag_sets: z.array(z.object({
-          tags: z.array(z.string()),
-          description: z.string()
-        })).describe('Alternative tag combinations for different results'),
-        tag_usage_tips: z.array(z.string()).describe('Tips for using these tags effectively')
-      }
+      inputSchema: generateSunoTagsContractV1.raw.input,
+      outputSchema: generateSunoTagsContractV1.raw.output
     },
-    async ({ lyrics, intended_genre, intended_mood, reference_artists, specific_requests }) => {
+    async ({ lyrics, intended_genre, intended_mood, reference_artists, specific_requests }: GenerateSunoTagsInputV1) => {
       const prompt = `You are a Suno AI tag expert. Analyze these lyrics and suggest optimal Suno tags.
 
 LYRICS:
@@ -218,31 +188,10 @@ Prioritize tags that will actually influence Suno's generation in meaningful way
     {
       title: 'Optimize Suno Prompt',
       description: 'Create an optimized complete Suno prompt from lyrics and tags for best generation results',
-      inputSchema: {
-        lyrics: z.string().describe('Formatted lyrics for Suno'),
-        tags: z.array(z.string()).describe('Style/genre tags to use'),
-        title: z.string().optional().describe('Optional: song title'),
-        additional_instructions: z.string().optional().describe(
-          'Optional: additional instructions for Suno (e.g., "emphasize chorus", "slow tempo")'
-        ),
-        optimization_goal: z.enum(['commercial', 'artistic', 'experimental']).default('artistic').describe(
-          'Optimization goal: commercial (accessible/catchy), artistic (unique/deep), experimental (boundary-pushing)'
-        )
-      },
-      outputSchema: {
-        optimized_prompt: z.string().describe('Complete optimized Suno prompt ready to use'),
-        prompt_components: z.object({
-          title: z.string().optional(),
-          tags: z.array(z.string()),
-          lyrics: z.string(),
-          special_instructions: z.string().optional()
-        }).describe('Breakdown of prompt components'),
-        optimization_notes: z.string().describe('Explanation of optimizations made'),
-        generation_tips: z.array(z.string()).describe('Tips for using this prompt with Suno'),
-        expected_result: z.string().describe('What to expect from Suno with this prompt')
-      }
+      inputSchema: optimizeSunoPromptContractV1.raw.input,
+      outputSchema: optimizeSunoPromptContractV1.raw.output
     },
-    async ({ lyrics, tags, title, additional_instructions, optimization_goal }) => {
+    async ({ lyrics, tags, title, additional_instructions, optimization_goal }: OptimizeSunoPromptInputV1) => {
       const goalDescriptions: Record<string, string> = {
         commercial: 'Maximize accessibility and memorability for broad appeal',
         artistic: 'Balance uniqueness with listenability for artistic integrity',
@@ -343,37 +292,10 @@ Create a prompt optimized for ${optimization_goal} results.`;
     {
       title: 'Analyze Suno Output',
       description: 'Analyze Suno-generated results and get strategic suggestions for improving the next iteration',
-      inputSchema: {
-        original_prompt: z.string().describe('The prompt used for Suno generation'),
-        output_description: z.string().describe(
-          'Description of what Suno generated (since we cannot analyze audio directly, user describes it)'
-        ),
-        what_worked: z.array(z.string()).optional().describe('What aspects worked well'),
-        what_didnt_work: z.array(z.string()).optional().describe('What aspects did not work well'),
-        desired_changes: z.string().optional().describe('What you want to change in next iteration')
-      },
-      outputSchema: {
-        analysis: z.object({
-          successful_elements: z.array(z.string()),
-          problematic_elements: z.array(z.string()),
-          likely_causes: z.array(z.string())
-        }).describe('Analysis of what happened and why'),
-        iteration_strategy: z.object({
-          keep: z.array(z.string()),
-          modify: z.array(z.string()),
-          remove: z.array(z.string()),
-          add: z.array(z.string())
-        }).describe('Strategic changes for next iteration'),
-        revised_prompt_suggestions: z.array(z.object({
-          change: z.string(),
-          rationale: z.string(),
-          expected_impact: z.string()
-        })).describe('Specific prompt modifications to try'),
-        experimentation_ideas: z.array(z.string()).describe('Creative alternatives to explore'),
-        generation_insights: z.string().describe('What this generation teaches about Suno behavior')
-      }
+      inputSchema: analyzeSunoOutputContractV1.raw.input,
+      outputSchema: analyzeSunoOutputContractV1.raw.output
     },
-    async ({ original_prompt, output_description, what_worked, what_didnt_work, desired_changes }) => {
+    async ({ original_prompt, output_description, what_worked, what_didnt_work, desired_changes }: AnalyzeSunoOutputInputV1) => {
       const prompt = `You are a Suno AI output analyst. Analyze this generation result and suggest improvements.
 
 ORIGINAL PROMPT:
