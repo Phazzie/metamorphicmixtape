@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { formatForSunoInputSchema, formatForSunoOutputSchema, sunoContracts } from '../contracts/suno.js';
 
 /**
  * Suno-Specific Tools
@@ -11,29 +12,15 @@ import { z } from 'zod';
 export async function registerSunoTools(server: McpServer) {
 
   // 🎧 Format for Suno - Convert lyrics to Suno-optimized format
+  const formatForSunoContract = sunoContracts.formatForSuno;
+
   server.registerTool(
-    'format_for_suno',
+    formatForSunoContract.name,
     {
-      title: 'Format for Suno',
-      description: 'Convert lyrics to Suno-ready format with proper structure markers and optimization for best generation results',
-      inputSchema: {
-        lyrics: z.string().describe('The lyrics to format for Suno'),
-        style_tags: z.array(z.string()).optional().describe(
-          'Optional: pre-selected style tags (genre, mood, etc.)'
-        ),
-        structure_explicit: z.boolean().default(true).describe(
-          'Whether to include explicit structure markers like [Verse 1], [Chorus], etc.'
-        ),
-        optimize_for: z.enum(['clarity', 'creativity', 'balanced']).default('balanced').describe(
-          'Optimization focus: clarity (predictable results), creativity (experimental), balanced (best of both)'
-        )
-      },
-      outputSchema: {
-        formatted_lyrics: z.string().describe('Suno-ready lyrics with proper markers and formatting'),
-        structure_markers: z.array(z.string()).describe('List of structure markers used'),
-        formatting_notes: z.string().describe('Explanation of formatting choices made'),
-        suno_best_practices: z.array(z.string()).describe('Suno-specific tips applied')
-      }
+      title: formatForSunoContract.title,
+      description: formatForSunoContract.description,
+      inputSchema: formatForSunoInputSchema.shape,
+      outputSchema: formatForSunoOutputSchema.shape
     },
     async ({ lyrics, style_tags, structure_explicit, optimize_for }) => {
       const prompt = `You are a Suno AI formatting expert. Format these lyrics for optimal Suno generation.
