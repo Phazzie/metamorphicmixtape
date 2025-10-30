@@ -1,0 +1,25 @@
+<main class="shell">
+  <header class="hero">
+    <h1>Metamorphic Mixtape</h1>
+    <p>Explore AI songwriting tools and expose them over the HTTP adapter.</p>
+  </header>
+
+  <section class="content" *ngIf="!error()">
+    <article class="tool" *ngFor="let tool of tools()">
+      <h2>{{ tool.title || tool.name }}</h2>
+      <p class="name">{{ tool.name }}</p>
+      <p>{{ tool.description || 'No description provided.' }}</p>
+    </article>
+  </section>
+
+  <section class="content" *ngIf="error()">
+    <article class="error">
+      <h2>Adapter Unavailable</h2>
+      <p>{{ error() }}</p>
+      <p>
+        Ensure the Node adapter is running locally or deploy it via the DigitalOcean App Platform configuration included in this
+        repository.
+      </p>
+    </article>
+  </section>
+</main>
