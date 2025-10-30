@@ -1,0 +1,35 @@
+:root {
+  font-family: 'Inter', Arial, sans-serif;
+  color: #111827;
+  background-color: #f9fafb;
+}
+
+a {
+  color: inherit;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.section-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(17, 24, 39, 0.05);
+}
+
+.section-title {
+  margin: 0 0 0.75rem 0;
+}
