@@ -289,6 +289,64 @@ npm run clean    # Remove dist/ directory
 
 ## Contributing
 
+## HTTP Adapter & Frontend Console
+
+- Build the TypeScript services and start the HTTP adapter:
+
+  ```bash
+  npm run build
+  npm run start:http
+  ```
+
+- Query available tools at `http://localhost:3000/tools` and execute them via `POST /tools/:name/execute`.
+- The Express adapter serves the compiled Angular console from `public/`, giving a visual catalog of available tools.
+- Validate contracts locally with `npm run test:contracts` to ensure the HTTP adapter and MCP server stay in sync.
+
+## Angular Songwriting Console
+
+The `web/` workspace contains a lightweight Angular dashboard that lists all published tool contracts.
+
+- Install dependencies with the root workspace install (`npm ci`).
+- Build the production bundle with:
+
+  ```bash
+  npm run build:web
+  ```
+
+## Containerization
+
+The repository ships with a multi-stage `Dockerfile` that compiles TypeScript sources, validates contracts, builds the Angular frontend, and assembles a minimal runtime image serving on port `3000`.
+
+```bash
+docker build -t metamorphic-mixtape:latest .
+docker run -p 3000:3000 metamorphic-mixtape:latest
+```
+
+## GitHub Actions Automation
+
+- `.github/workflows/build.yml` – compiles the TypeScript services and Angular console.
+- `.github/workflows/contract-tests.yml` – validates the shared tool contracts.
+- `.github/workflows/docker.yml` – builds and publishes the Docker image to GHCR on pushes to `main` and version tags.
+
+## DigitalOcean Deployment
+
+- `infra/digitalocean-app.yaml` – App Platform spec. Replace `ghcr.io/OWNER/metamorphic-mixtape` with your GHCR image.
+- `infra/scripts/deploy.sh` – wraps `doctl apps update` using the spec (requires `DIGITALOCEAN_APP_ID` and authenticated `doctl`).
+
+```bash
+DIGITALOCEAN_APP_ID=<your-app-id> ./infra/scripts/deploy.sh
+```
+
+## Smoke Tests
+
+Use the smoke test script after deploying to ensure the adapter seam is reachable:
+
+```bash
+node infra/scripts/smoke-test.ts https://your-domain.digitaloceanspaces.app
+```
+
+The script checks `/health` and `/tools` for availability.
+
 This is an AI-first project. When contributing:
 
 1. **Follow SDD**: Define contracts before implementation
