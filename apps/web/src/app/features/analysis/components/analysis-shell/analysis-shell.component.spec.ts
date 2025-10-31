@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/angular';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import {
   EmotionalArchaeologyRequestSchema,
@@ -8,6 +8,7 @@ import {
 import { AnalysisModule } from '../../analysis.module';
 import { AnalysisService } from '../../services/analysis.service';
 import { AnalysisShellComponent } from './analysis-shell.component';
+import { SeamRequestError } from '../../../../core/errors/seam-request.error';
 
 describe('AnalysisShellComponent', () => {
   it('submits an emotional archaeology request that matches the contract', async () => {
@@ -42,5 +43,30 @@ describe('AnalysisShellComponent', () => {
     expect(service.runEmotionalArchaeology).toHaveBeenCalled();
     const payload = service.runEmotionalArchaeology.calls.mostRecent().args[0];
     expect(() => EmotionalArchaeologyRequestSchema.parse(payload)).not.toThrow();
+  });
+
+  it('exposes descriptive seam errors in the UI', async () => {
+    const service = {
+      runEmotionalArchaeology: jasmine
+        .createSpy('runEmotionalArchaeology')
+        .and.returnValue(
+          throwError(() => new SeamRequestError('analysis.emotionalArchaeology', 'Gateway timeout', { status: 504 }))
+        )
+    };
+
+    await render(AnalysisShellComponent, {
+      imports: [AnalysisModule],
+      providers: [{ provide: AnalysisService, useValue: service }]
+    });
+
+    await fireEvent.input(screen.getByPlaceholderText('Recurring anxiety, dissolving friendships, etc.'), {
+      target: { value: 'Recurring neon dreams' }
+    });
+
+    const submit = screen.getByRole('button', { name: /run emotional archaeology/i });
+    await fireEvent.click(submit);
+
+    expect(service.runEmotionalArchaeology).toHaveBeenCalled();
+    expect(await screen.findByText(/gateway timeout/i)).toBeInTheDocument();
   });
 });

@@ -1,9 +1,10 @@
 import { Inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, catchError, throwError } from 'rxjs';
 
 import { GenerateLyricsRequest } from '@metamorphic-mixtape/contracts/songwriting';
 import { SEAM_API_BASE_URL } from './seam-tokens';
+import { SeamRequestError } from '../errors/seam-request.error';
 
 @Injectable({ providedIn: 'root' })
 export class SongwritingSeamAdapter {
@@ -13,6 +14,8 @@ export class SongwritingSeamAdapter {
 
   generateLyrics(request: GenerateLyricsRequest): Observable<unknown> {
     const url = `${this.baseUrl}/${this.resource}/generate-lyrics`;
-    return this.http.post(url, request);
+    return this.http.post(url, request).pipe(
+      catchError((error) => throwError(() => SeamRequestError.fromHttpError('songwriting.generateLyrics', error)))
+    );
   }
 }

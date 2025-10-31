@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 import { FormatForSunoRequest, FormatForSunoResponse } from '@metamorphic-mixtape/contracts/suno';
 import { SunoService } from '../../services/suno.service';
+import { toUserFacingMessage } from '../../../../core/errors/user-facing-error';
 
 @Component({
   selector: 'app-suno-shell',
@@ -26,7 +27,10 @@ export class SunoShellComponent {
       },
       error: (err) => {
         console.error('Suno seam failure', err);
-        this.error = 'Unable to format lyrics for Suno right now.';
+        this.error = toUserFacingMessage(
+          err,
+          'Unable to format lyrics for Suno right now.'
+        );
         this.loading = false;
       }
     });

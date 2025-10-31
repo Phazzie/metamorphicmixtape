@@ -1,12 +1,15 @@
 import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import {
+  EmotionalArchaeologyRequest,
   EmotionalArchaeologyRequestSchema,
   EmotionalArchaeologyResponseSchema
 } from '@metamorphic-mixtape/contracts/analysis';
 import { AnalysisSeamAdapter } from '../../../core/seams/analysis.seam';
 import { AnalysisService } from './analysis.service';
+import { ContractValidationError } from '../../../core/errors/contract-validation.error';
+import { SeamRequestError } from '../../../core/errors/seam-request.error';
 
 describe('AnalysisService', () => {
   let service: AnalysisService;
@@ -64,6 +67,51 @@ describe('AnalysisService', () => {
       expect(seam.emotionalArchaeology).toHaveBeenCalledWith(request);
       expect(() => EmotionalArchaeologyResponseSchema.parse(result)).not.toThrow();
       done();
+    });
+  });
+
+  it('throws a contract validation error for invalid requests', () => {
+    expect(() => service.runEmotionalArchaeology({} as EmotionalArchaeologyRequest)).toThrowError(
+      ContractValidationError
+    );
+  });
+
+  it('surfaces contract validation failures for invalid responses', (done) => {
+    const request = EmotionalArchaeologyRequestSchema.parse({
+      data_sources: ['messages'],
+      time_period: 'last_month',
+      emotional_depth: 'deep',
+      privacy_level: 'anonymous'
+    });
+
+    seam.emotionalArchaeology.and.returnValue(of({ invalid: true }));
+
+    service.runEmotionalArchaeology(request).subscribe({
+      next: () => fail('Expected contract validation error'),
+      error: (error) => {
+        expect(error).toEqual(jasmine.any(ContractValidationError));
+        done();
+      }
+    });
+  });
+
+  it('propagates seam request errors without modification', (done) => {
+    const request = EmotionalArchaeologyRequestSchema.parse({
+      data_sources: ['messages'],
+      time_period: 'last_month',
+      emotional_depth: 'deep',
+      privacy_level: 'anonymous'
+    });
+
+    const seamError = new SeamRequestError('analysis.emotionalArchaeology', 'Gateway timeout', { status: 504 });
+    seam.emotionalArchaeology.and.returnValue(throwError(() => seamError));
+
+    service.runEmotionalArchaeology(request).subscribe({
+      next: () => fail('Expected seam error'),
+      error: (error) => {
+        expect(error).toBe(seamError);
+        done();
+      }
     });
   });
 });

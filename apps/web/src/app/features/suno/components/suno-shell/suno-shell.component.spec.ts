@@ -1,10 +1,11 @@
 import { render, screen, fireEvent } from '@testing-library/angular';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { FormatForSunoRequestSchema, FormatForSunoResponseSchema } from '@metamorphic-mixtape/contracts/suno';
 import { SunoModule } from '../../suno.module';
 import { SunoService } from '../../services/suno.service';
 import { SunoShellComponent } from './suno-shell.component';
+import { SeamRequestError } from '../../../../core/errors/seam-request.error';
 
 describe('SunoShellComponent', () => {
   it('forwards formatted requests to the seam-backed service', async () => {
@@ -34,5 +35,28 @@ describe('SunoShellComponent', () => {
     expect(service.formatLyrics).toHaveBeenCalled();
     const payload = service.formatLyrics.calls.mostRecent().args[0];
     expect(() => FormatForSunoRequestSchema.parse(payload)).not.toThrow();
+  });
+
+  it('renders seam errors surfaced by the service', async () => {
+    const service = {
+      formatLyrics: jasmine
+        .createSpy('formatLyrics')
+        .and.returnValue(throwError(() => new SeamRequestError('suno.formatLyrics', 'Bad gateway', { status: 502 })))
+    };
+
+    await render(SunoShellComponent, {
+      imports: [SunoModule],
+      providers: [{ provide: SunoService, useValue: service }]
+    });
+
+    await fireEvent.input(screen.getByPlaceholderText('Paste the lyrics you want to format for Suno'), {
+      target: { value: 'Sample lyrics ready for formatting' }
+    });
+
+    const submit = screen.getByRole('button', { name: /format for suno/i });
+    await fireEvent.click(submit);
+
+    expect(service.formatLyrics).toHaveBeenCalled();
+    expect(await screen.findByText(/bad gateway/i)).toBeInTheDocument();
   });
 });

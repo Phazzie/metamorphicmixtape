@@ -5,6 +5,7 @@ import {
   EmotionalArchaeologyResponse
 } from '@metamorphic-mixtape/contracts/analysis';
 import { AnalysisService } from '../../services/analysis.service';
+import { toUserFacingMessage } from '../../../../core/errors/user-facing-error';
 
 @Component({
   selector: 'app-analysis-shell',
@@ -29,7 +30,10 @@ export class AnalysisShellComponent {
       },
       error: (err) => {
         console.error('Analysis seam failure', err);
-        this.error = 'We could not complete the analysis. Try again later.';
+        this.error = toUserFacingMessage(
+          err,
+          'We could not complete the analysis. Try again later.'
+        );
         this.loading = false;
       }
     });

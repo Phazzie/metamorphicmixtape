@@ -1,12 +1,15 @@
 import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import {
+  GenerateLyricsRequest,
   GenerateLyricsRequestSchema,
   GenerateLyricsResponseSchema
 } from '@metamorphic-mixtape/contracts/songwriting';
 import { SongwritingSeamAdapter } from '../../../core/seams/songwriting.seam';
 import { SongwritingService } from './songwriting.service';
+import { ContractValidationError } from '../../../core/errors/contract-validation.error';
+import { SeamRequestError } from '../../../core/errors/seam-request.error';
 
 describe('SongwritingService', () => {
   let service: SongwritingService;
@@ -46,6 +49,49 @@ describe('SongwritingService', () => {
       expect(seam.generateLyrics).toHaveBeenCalledWith(request);
       expect(() => GenerateLyricsResponseSchema.parse(result)).not.toThrow();
       done();
+    });
+  });
+
+  it('throws a contract validation error when the request violates the contract', () => {
+    expect(() => service.generateLyrics({} as GenerateLyricsRequest)).toThrowError(ContractValidationError);
+  });
+
+  it('emits a contract validation error when the seam returns an invalid response', (done) => {
+    const request = GenerateLyricsRequestSchema.parse({
+      concept: 'Concept',
+      tone: 'reflective',
+      style: 'ballad',
+      length: 'short'
+    });
+
+    seam.generateLyrics.and.returnValue(of({ invalid: true }));
+
+    service.generateLyrics(request).subscribe({
+      next: () => fail('Expected contract validation error'),
+      error: (error) => {
+        expect(error).toEqual(jasmine.any(ContractValidationError));
+        done();
+      }
+    });
+  });
+
+  it('propagates seam request errors', (done) => {
+    const request = GenerateLyricsRequestSchema.parse({
+      concept: 'Concept',
+      tone: 'reflective',
+      style: 'ballad',
+      length: 'short'
+    });
+
+    const seamError = new SeamRequestError('songwriting.generateLyrics', 'Service unavailable', { status: 503 });
+    seam.generateLyrics.and.returnValue(throwError(() => seamError));
+
+    service.generateLyrics(request).subscribe({
+      next: () => fail('Expected seam error'),
+      error: (error) => {
+        expect(error).toBe(seamError);
+        done();
+      }
     });
   });
 });

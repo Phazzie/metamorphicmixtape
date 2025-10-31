@@ -5,6 +5,7 @@ import {
   GenerateLyricsResponse
 } from '@metamorphic-mixtape/contracts/songwriting';
 import { SongwritingService } from '../../services/songwriting.service';
+import { toUserFacingMessage } from '../../../../core/errors/user-facing-error';
 
 @Component({
   selector: 'app-songwriting-shell',
@@ -29,7 +30,10 @@ export class SongwritingShellComponent {
       },
       error: (err) => {
         console.error('Songwriting seam failure', err);
-        this.error = 'We could not reach the songwriting seam. Try again shortly.';
+        this.error = toUserFacingMessage(
+          err,
+          'We could not reach the songwriting seam. Try again shortly.'
+        );
         this.loading = false;
       }
     });

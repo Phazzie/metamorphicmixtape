@@ -1,9 +1,15 @@
 import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
-import { FormatForSunoRequestSchema, FormatForSunoResponseSchema } from '@metamorphic-mixtape/contracts/suno';
+import {
+  FormatForSunoRequest,
+  FormatForSunoRequestSchema,
+  FormatForSunoResponseSchema
+} from '@metamorphic-mixtape/contracts/suno';
 import { SunoSeamAdapter } from '../../../core/seams/suno.seam';
 import { SunoService } from './suno.service';
+import { ContractValidationError } from '../../../core/errors/contract-validation.error';
+import { SeamRequestError } from '../../../core/errors/seam-request.error';
 
 describe('SunoService', () => {
   let service: SunoService;
@@ -41,6 +47,47 @@ describe('SunoService', () => {
       expect(seam.formatLyrics).toHaveBeenCalledWith(request);
       expect(() => FormatForSunoResponseSchema.parse(result)).not.toThrow();
       done();
+    });
+  });
+
+  it('rejects invalid requests before contacting the seam', () => {
+    expect(() => service.formatLyrics({} as FormatForSunoRequest)).toThrowError(ContractValidationError);
+  });
+
+  it('emits contract validation errors for malformed seam responses', (done) => {
+    const request = FormatForSunoRequestSchema.parse({
+      lyrics: 'Example lyrics',
+      structure_explicit: true,
+      optimize_for: 'balanced'
+    });
+
+    seam.formatLyrics.and.returnValue(of({ incorrect: true }));
+
+    service.formatLyrics(request).subscribe({
+      next: () => fail('Expected contract validation error'),
+      error: (error) => {
+        expect(error).toEqual(jasmine.any(ContractValidationError));
+        done();
+      }
+    });
+  });
+
+  it('propagates seam request errors for caller handling', (done) => {
+    const request = FormatForSunoRequestSchema.parse({
+      lyrics: 'Example lyrics',
+      structure_explicit: true,
+      optimize_for: 'balanced'
+    });
+
+    const seamError = new SeamRequestError('suno.formatLyrics', 'Bad gateway', { status: 502 });
+    seam.formatLyrics.and.returnValue(throwError(() => seamError));
+
+    service.formatLyrics(request).subscribe({
+      next: () => fail('Expected seam error'),
+      error: (error) => {
+        expect(error).toBe(seamError);
+        done();
+      }
     });
   });
 });
