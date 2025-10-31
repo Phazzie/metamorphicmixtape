@@ -1,0 +1,46 @@
+<div class="app-shell">
+  <header>
+    <h1>{{ title }}</h1>
+    <button type="button" (click)="loadTools()">Refresh</button>
+  </header>
+
+  <section *ngIf="loading(); else content" class="state">
+    Loading tool registry...
+  </section>
+
+  <ng-template #content>
+    <section *ngIf="error(); else toolList" class="state error">
+      {{ error() }}
+    </section>
+  </ng-template>
+
+  <ng-template #toolList>
+    <div class="layout">
+      <aside>
+        <h2>Available Tools</h2>
+        <p *ngIf="!hasTools()">No tools registered.</p>
+        <ul>
+          <li *ngFor="let tool of tools()">
+            <button type="button" (click)="viewContract(tool)">
+              <strong>{{ tool.title }}</strong>
+              <span>{{ tool.description }}</span>
+            </button>
+          </li>
+        </ul>
+      </aside>
+
+      <article *ngIf="selectedContract(); else emptyState">
+        <h2>{{ selectedTool()?.title }}</h2>
+        <p>{{ selectedTool()?.description }}</p>
+        <h3>Contract</h3>
+        <pre>{{ selectedContract() | json }}</pre>
+      </article>
+
+      <ng-template #emptyState>
+        <article class="state">
+          Select a tool to view its contract definition.
+        </article>
+      </ng-template>
+    </div>
+  </ng-template>
+</div>

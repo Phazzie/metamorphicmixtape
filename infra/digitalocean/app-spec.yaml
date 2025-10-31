@@ -1,0 +1,23 @@
+name: metamorphic-mixtape
+region: nyc
+services:
+  - name: mixtape-gateway
+    http_port: 8080
+    instance_count: 1
+    instance_size_slug: professional-xs
+    docker:
+      image: ghcr.io/OWNER/REPO:latest
+    routes:
+      - path: /
+    envs:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "8080"
+    health_check:
+      http_path: /health
+      initial_delay_seconds: 10
+      period_seconds: 30
+      timeout_seconds: 5
+      success_threshold: 1
+      failure_threshold: 3
