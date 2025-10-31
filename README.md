@@ -69,6 +69,47 @@ npm run build
 npm start
 ```
 
+### HTTP Adapter & Web UI
+
+To expose the MCP tools over HTTP and serve the Angular dashboard:
+
+```bash
+npm run build
+npm run build --prefix web -- --configuration=production
+npm run start:http
+```
+
+The adapter listens on port `8080` by default. Visit `http://localhost:8080` to open the Angular interface. The following REST endpoints are available:
+
+- `GET /health` – service readiness probe
+- `GET /tools` – list of registered tool contracts
+- `GET /tools/:name` – detailed contract metadata
+- `POST /tools/:name/execute` – invoke a tool with runtime validation
+
+### Docker Image
+
+Build a production container that bundles the HTTP adapter and Angular assets:
+
+```bash
+docker build -t metamorphic-mixtape:local .
+docker run -p 8080:8080 metamorphic-mixtape:local
+```
+
+### DigitalOcean App Platform
+
+Deploy the container to DigitalOcean using the provided spec and deployment helper:
+
+```bash
+export DIGITALOCEAN_ACCESS_TOKEN=... # personal access token
+./scripts/deploy-digitalocean.sh infra/digitalocean/app-spec.yaml ghcr.io/OWNER/REPO:latest
+```
+
+After deployment, validate the seam with the smoke test script:
+
+```bash
+node scripts/smoke-test.mjs https://your-app-url
+```
+
 ## VS Code Integration
 
 ### Configure GitHub Copilot for MCP
