@@ -1,4 +1,4 @@
-import { Component, computed, effect, signal } from '@angular/core';
+import { Component, computed, signal, OnInit } from '@angular/core';
 import { AsyncPipe, JsonPipe, NgFor, NgIf } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 
@@ -8,6 +8,12 @@ interface ToolContractView {
   description: string;
 }
 
+interface ToolContractDetail extends ToolContractView {
+  inputSchema: Record<string, unknown>;
+  outputSchema?: Record<string, unknown>;
+  annotations?: Record<string, unknown>;
+}
+
 @Component({
   selector: 'metamorphic-root',
   standalone: true,
@@ -15,18 +21,18 @@ interface ToolContractView {
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   readonly title = 'Metamorphic Mixtape Tools';
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly tools = signal<ToolContractView[]>([]);
   readonly selectedTool = signal<ToolContractView | null>(null);
-  readonly selectedContract = signal<any>(null);
+  readonly selectedContract = signal<ToolContractDetail | null>(null);
 
-  constructor(private readonly http: HttpClient) {
-    effect(() => {
-      void this.loadTools();
-    });
+  constructor(private readonly http: HttpClient) {}
+
+  ngOnInit() {
+    void this.loadTools();
   }
 
   readonly hasTools = computed(() => this.tools().length > 0);
@@ -54,8 +60,8 @@ export class AppComponent {
     this.selectedContract.set(null);
 
     try {
-      const response = await this.http.get(`/tools/${tool.name}`).toPromise();
-      this.selectedContract.set(response);
+      const response = await this.http.get<ToolContractDetail>(`/tools/${tool.name}`).toPromise();
+      this.selectedContract.set(response ?? null);
     } catch (error) {
       console.error('Failed to load tool contract', error);
       this.error.set('Unable to load tool contract.');

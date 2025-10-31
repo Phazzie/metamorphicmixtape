@@ -6,7 +6,7 @@
     "baseUrl": ".",
     "paths": {
       "@metamorphicmixtape/contracts": ["contracts/tool-contracts/dist/index.d.ts"],
-      "@metamorphicmixtape/contracts/*.js": ["contracts/tool-contracts/dist/*.d.ts"]
+      "@metamorphicmixtape/contracts/*": ["contracts/tool-contracts/dist/*"]
     },
     "outDir": "./dist",
     "rootDir": "./src",

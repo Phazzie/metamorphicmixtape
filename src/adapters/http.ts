@@ -56,7 +56,7 @@ async function bootstrap() {
     });
   });
 
-  app.post('/tools/:name/execute', async (req: Request, res: Response) => {
+  app.post('/tools/:name', async (req: Request, res: Response) => {
     const tool = registry.tools.get(req.params.name);
 
     if (!tool) {
@@ -77,11 +77,8 @@ async function bootstrap() {
     try {
       const result = await tool.callback(validation.data);
 
-      if (tool.contract.outputSchema) {
-        if (!result?.structuredContent) {
-          throw new Error('Tool did not return structured content for validated response');
-        }
-
+      // If tool has output schema, validate the structured content if present
+      if (tool.contract.outputSchema && result?.structuredContent) {
         const outputValidation = await tool.contract.outputSchema.safeParseAsync(result.structuredContent);
 
         if (!outputValidation.success) {
