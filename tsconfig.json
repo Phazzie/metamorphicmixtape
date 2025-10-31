@@ -4,7 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": ".",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -13,10 +13,16 @@
     "declarationMap": true,
     "sourceMap": true,
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    "paths": {
+      "@metamorphic-mixtape/contracts": ["packages/contracts/src/index.ts"],
+      "@metamorphic-mixtape/contracts/*": ["packages/contracts/src/*.ts"]
+    }
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "packages/contracts/src/**/*"
   ],
   "exclude": [
     "node_modules",

@@ -1,0 +1,43 @@
+<form class="form" [formGroup]="form" (ngSubmit)="submit()">
+  <label class="field">
+    <span>Concept</span>
+    <textarea rows="3" formControlName="concept" placeholder="A concept, theme, or story"></textarea>
+  </label>
+
+  <div class="field-group">
+    <label class="field">
+      <span>Tone</span>
+      <select formControlName="tone">
+        <option *ngFor="let tone of tones" [value]="tone">{{ tone }}</option>
+      </select>
+    </label>
+
+    <label class="field">
+      <span>Style</span>
+      <select formControlName="style">
+        <option *ngFor="let style of styles" [value]="style">{{ style }}</option>
+      </select>
+    </label>
+
+    <label class="field">
+      <span>Length</span>
+      <select formControlName="length">
+        <option *ngFor="let length of lengths" [value]="length">{{ length }}</option>
+      </select>
+    </label>
+  </div>
+
+  <label class="field">
+    <span>Creative Constraints (optional)</span>
+    <input formControlName="constraints" placeholder="Use water imagery, no rhymes, etc." />
+  </label>
+
+  <label class="field">
+    <span>Reference Style (optional)</span>
+    <input formControlName="reference_style" placeholder="Bon Iver abstraction, etc." />
+  </label>
+
+  <button type="submit" [disabled]="loading">
+    {{ loading ? 'Generating…' : 'Generate Lyrics' }}
+  </button>
+</form>

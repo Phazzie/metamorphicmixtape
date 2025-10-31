@@ -1,0 +1,24 @@
+.status {
+  margin-top: 1rem;
+}
+
+.error {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.result {
+  margin-top: 1.5rem;
+  background: rgba(14, 116, 144, 0.08);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+}
+
+pre {
+  white-space: pre-wrap;
+  background: rgba(30, 64, 175, 0.85);
+  color: #f8fafc;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
