@@ -1,0 +1,27 @@
+<form class="form" [formGroup]="form" (ngSubmit)="submit()">
+  <label class="field">
+    <span>Lyrics</span>
+    <textarea rows="6" formControlName="lyrics" placeholder="Paste the lyrics you want to format for Suno"></textarea>
+  </label>
+
+  <label class="field">
+    <span>Style Tags (comma separated)</span>
+    <input formControlName="style_tags" placeholder="indie folk, lush strings, melancholic" />
+  </label>
+
+  <label class="toggle">
+    <input type="checkbox" formControlName="structure_explicit" />
+    <span>Include explicit structure markers</span>
+  </label>
+
+  <label class="field">
+    <span>Optimize For</span>
+    <select formControlName="optimize_for">
+      <option *ngFor="let option of optimizeOptions" [value]="option">{{ option }}</option>
+    </select>
+  </label>
+
+  <button type="submit" [disabled]="loading">
+    {{ loading ? 'Formatting…' : 'Format for Suno' }}
+  </button>
+</form>

@@ -1,0 +1,47 @@
+<form class="form" [formGroup]="form" (ngSubmit)="submit()">
+  <fieldset class="field">
+    <legend>Data Sources</legend>
+    <div class="checkbox-grid">
+      <label *ngFor="let option of dataSourceOptions">
+        <input
+          type="checkbox"
+          [checked]="form.value.data_sources?.includes(option)"
+          (change)="toggleSource(option, $event.target.checked)"
+        />
+        <span>{{ option }}</span>
+      </label>
+    </div>
+  </fieldset>
+
+  <div class="field-group">
+    <label class="field">
+      <span>Time Period</span>
+      <select formControlName="time_period">
+        <option *ngFor="let period of timePeriods" [value]="period">{{ period }}</option>
+      </select>
+    </label>
+
+    <label class="field">
+      <span>Emotional Depth</span>
+      <select formControlName="emotional_depth">
+        <option *ngFor="let depth of depths" [value]="depth">{{ depth }}</option>
+      </select>
+    </label>
+
+    <label class="field">
+      <span>Privacy Level</span>
+      <select formControlName="privacy_level">
+        <option *ngFor="let mode of privacyModes" [value]="mode">{{ mode }}</option>
+      </select>
+    </label>
+  </div>
+
+  <label class="field">
+    <span>Theme Focus (optional)</span>
+    <input formControlName="theme_focus" placeholder="Recurring anxiety, dissolving friendships, etc." />
+  </label>
+
+  <button type="submit" [disabled]="loading">
+    {{ loading ? 'Analyzing…' : 'Run Emotional Archaeology' }}
+  </button>
+</form>

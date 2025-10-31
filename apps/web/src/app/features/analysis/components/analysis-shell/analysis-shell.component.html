@@ -1,0 +1,42 @@
+<app-analysis-request [loading]="loading" (analyze)="runAnalysis($event)"></app-analysis-request>
+
+<div class="status" *ngIf="error">
+  <p class="error">{{ error }}</p>
+</div>
+
+<div class="report" *ngIf="report as insight">
+  <h3>Creative Insights</h3>
+  <section>
+    <h4>Emotional Patterns</h4>
+    <ul>
+      <li *ngFor="let pattern of insight.emotional_patterns">
+        <strong>{{ pattern.theme }}</strong> — intensity {{ pattern.intensity }}/10 ({{ pattern.frequency }})
+        <div class="muted">{{ pattern.context }}</div>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h4>Hidden Themes</h4>
+    <ul>
+      <li *ngFor="let theme of insight.hidden_themes">
+        <strong>{{ theme.theme }}</strong>
+        <div class="muted">{{ theme.creative_angle }}</div>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h4>Songwriting Prompts</h4>
+    <ul>
+      <li *ngFor="let prompt of insight.songwriting_prompts">{{ prompt }}</li>
+    </ul>
+  </section>
+
+  <section>
+    <h4>Creative Insights</h4>
+    <ul>
+      <li *ngFor="let note of insight.creative_insights">{{ note }}</li>
+    </ul>
+  </section>
+</div>

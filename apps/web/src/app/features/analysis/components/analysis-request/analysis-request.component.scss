@@ -1,0 +1,31 @@
+.form {
+  display: grid;
+  gap: 1rem;
+}
+
+.field,
+fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.5rem 1rem;
+}
+
+.field-group {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+input,
+select {
+  border-radius: 0.5rem;
+  border: 1px solid #d1d5db;
+  padding: 0.65rem;
+  font: inherit;
+}
