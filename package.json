@@ -5,9 +5,11 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "npm run build:contracts && tsc",
+    "build:contracts": "npm run build --workspace=@metamorphicmixtape/contracts",
     "start": "node dist/index.js",
     "dev": "tsc --watch",
+    "test": "npm run build && node --test tests/**/*.test.js",
     "clean": "rimraf dist"
   },
   "keywords": [
@@ -19,6 +21,9 @@
   ],
   "author": "Suno MCP Developer",
   "license": "MIT",
+  "workspaces": [
+    "contracts/*"
+  ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "zod": "^3.22.0"
