@@ -1,0 +1,124 @@
+<div class="songwriting-studio">
+  <div class="header">
+    <h2>🎵 Songwriting Studio</h2>
+    <p class="subtitle">Generate original lyrics powered by AI</p>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="lyrics-form">
+    <div class="form-group">
+      <label for="concept">Song Concept *</label>
+      <textarea
+        id="concept"
+        formControlName="concept"
+        rows="3"
+        placeholder="Describe your song idea, theme, or story..."
+        [class.error]="form.controls.concept.invalid && form.controls.concept.touched"
+      ></textarea>
+      @if (form.controls.concept.invalid && form.controls.concept.touched) {
+        <span class="error-message">Concept is required</span>
+      }
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="tone">Tone *</label>
+        <select id="tone" formControlName="tone">
+          @for (tone of tones; track tone) {
+            <option [value]="tone">{{ tone }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="style">Style *</label>
+        <select id="style" formControlName="style">
+          @for (style of styles; track style) {
+            <option [value]="style">{{ style }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="length">Length *</label>
+        <select id="length" formControlName="length">
+          @for (length of lengths; track length) {
+            <option [value]="length">{{ length }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="constraints">Creative Constraints (optional)</label>
+      <input
+        id="constraints"
+        type="text"
+        formControlName="constraints"
+        placeholder="e.g., 'use water imagery' or 'no clichés'"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="reference_style">Reference Style (optional)</label>
+      <input
+        id="reference_style"
+        type="text"
+        formControlName="reference_style"
+        placeholder="e.g., 'like Bon Iver' or 'indie folk'"
+      />
+    </div>
+
+    <button type="submit" [disabled]="loading()" class="submit-button">
+      @if (loading()) {
+        <span>Generating...</span>
+      } @else {
+        <span>Generate Lyrics</span>
+      }
+    </button>
+  </form>
+
+  @if (error()) {
+    <div class="error-banner">
+      <strong>Error:</strong> {{ error() }}
+    </div>
+  }
+
+  @if (result(); as lyrics) {
+    <div class="result-section">
+      <h3>Generated Lyrics</h3>
+      
+      <div class="lyrics-display">
+        <h4>Lyrics</h4>
+        <pre class="lyrics-text">{{ lyrics.lyrics }}</pre>
+      </div>
+
+      <div class="metadata-grid">
+        <div class="metadata-card">
+          <h4>Structure</h4>
+          <p>{{ lyrics.structure }}</p>
+        </div>
+
+        <div class="metadata-card">
+          <h4>Emotional Arc</h4>
+          <p>{{ lyrics.emotional_arc }}</p>
+        </div>
+      </div>
+
+      <div class="metadata-card">
+        <h4>Creative Notes</h4>
+        <p>{{ lyrics.creative_notes }}</p>
+      </div>
+
+      @if (lyrics.suggested_refinements && lyrics.suggested_refinements.length > 0) {
+        <div class="metadata-card">
+          <h4>Suggested Refinements</h4>
+          <ul>
+            @for (refinement of lyrics.suggested_refinements; track $index) {
+              <li>{{ refinement }}</li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+  }
+</div>

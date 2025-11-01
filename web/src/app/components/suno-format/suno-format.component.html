@@ -1,0 +1,84 @@
+<div class="suno-format">
+  <div class="header">
+    <h2>🎧 Suno Format Tool</h2>
+    <p class="subtitle">Optimize lyrics for Suno AI generation</p>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="format-form">
+    <div class="form-group">
+      <label for="lyrics">Your Lyrics *</label>
+      <textarea
+        id="lyrics"
+        formControlName="lyrics"
+        rows="8"
+        placeholder="Paste your lyrics here..."
+        [class.error]="form.controls.lyrics.invalid && form.controls.lyrics.touched"
+      ></textarea>
+      @if (form.controls.lyrics.invalid && form.controls.lyrics.touched) {
+        <span class="error-message">Lyrics are required</span>
+      }
+    </div>
+
+    <div class="form-group">
+      <label for="optimization_level">Optimization Level *</label>
+      <select id="optimization_level" formControlName="optimization_level">
+        @for (level of optimizationLevels; track level) {
+          <option [value]="level">{{ level }}</option>
+        }
+      </select>
+      <small class="hint">
+        Minimal: Light touch-ups | Balanced: Standard optimization | Aggressive: Heavy restructuring
+      </small>
+    </div>
+
+    <button type="submit" [disabled]="loading()" class="submit-button">
+      @if (loading()) {
+        <span>Formatting...</span>
+      } @else {
+        <span>Format for Suno</span>
+      }
+    </button>
+  </form>
+
+  @if (error()) {
+    <div class="error-banner">
+      <strong>Error:</strong> {{ error() }}
+    </div>
+  }
+
+  @if (result(); as formatted) {
+    <div class="result-section">
+      <h3>Formatted for Suno</h3>
+      
+      <div class="formatted-lyrics">
+        <h4>Suno-Ready Lyrics</h4>
+        <pre class="lyrics-text">{{ formatted.formatted_lyrics }}</pre>
+        <button class="copy-button" (click)="copyToClipboard(formatted.formatted_lyrics)">
+          📋 Copy to Clipboard
+        </button>
+      </div>
+
+      @if (formatted.changes_made && formatted.changes_made.length > 0) {
+        <div class="metadata-card">
+          <h4>Changes Made</h4>
+          <ul>
+            @for (change of formatted.changes_made; track $index) {
+              <li>{{ change }}</li>
+            }
+          </ul>
+        </div>
+      }
+
+      @if (formatted.suno_tips && formatted.suno_tips.length > 0) {
+        <div class="metadata-card tips">
+          <h4>💡 Suno Tips</h4>
+          <ul>
+            @for (tip of formatted.suno_tips; track $index) {
+              <li>{{ tip }}</li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+  }
+</div>
