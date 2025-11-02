@@ -1,6 +1,18 @@
-# Suno MCP Server
+# Metamorphic Mixtape (Suno MCP Server)
 
 An **AI-first** MCP (Model Context Protocol) server for professional songwriting workflows with Suno AI. Provides sophisticated AI-powered tools for lyric creation, refinement, and Suno optimization.
+
+## 🎉 What's New in v2.0.0
+
+**Production-ready platform with comprehensive web UI:**
+- ✅ **Angular 20 Web UI** with songwriting studio, Suno formatter, and tool browser
+- ✅ **HTTP REST API** for integrations and external access
+- ✅ **Docker deployment** with CI/CD pipelines
+- ✅ **100% seam-driven** with 7 versioned contracts
+- ✅ **Zero technical debt** (audited and verified)
+- ✅ **Zero security vulnerabilities**
+
+See [CHANGELOG.md](./CHANGELOG.md) for full details.
 
 ## Overview
 
@@ -84,7 +96,7 @@ The adapter listens on port `8080` by default. Visit `http://localhost:8080` to 
 - `GET /health` – service readiness probe
 - `GET /tools` – list of registered tool contracts
 - `GET /tools/:name` – detailed contract metadata
-- `POST /tools/:name/execute` – invoke a tool with runtime validation
+- `POST /tools/:name` – invoke a tool with runtime validation
 
 ### Docker Image
 

@@ -13,7 +13,6 @@ import { readdir, readFile } from 'fs/promises';
 import { join } from 'path';
 
 const CONTRACT_DIR = 'contracts/tool-contracts/src';
-const REQUIRED_EXPORTS = ['inputSchema', 'outputSchema', 'name', 'version'];
 
 class ValidationError extends Error {
   constructor(file, message) {

@@ -57,7 +57,7 @@ function parseCommitHistory(logOutput) {
   return commits;
 }
 
-function isFix commit(message) {
+function isFixCommit(message) {
   const lowerMessage = message.toLowerCase();
   return FIX_KEYWORDS.some(keyword => lowerMessage.includes(keyword));
 }
