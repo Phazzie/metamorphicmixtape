@@ -12,6 +12,12 @@
     "dev": "tsc --watch",
     "test": "npm run build && node --test tests/**/*.test.js",
     "contract:test": "npm run build && node scripts/contract-test.mjs",
+    "validate:contracts": "node scripts/validate-seam-contracts.mjs",
+    "validate:versions": "node scripts/check-contract-versions.mjs",
+    "validate:all": "npm run validate:contracts && npm run validate:versions && npm run lint:contracts",
+    "lint:contracts": "node scripts/lint-zod-contracts.mjs",
+    "check:two-strike": "node scripts/check-two-strike-violations.mjs",
+    "docs:contracts": "node scripts/generate-contract-docs.mjs",
     "clean": "rimraf dist"
   },
   "keywords": [
