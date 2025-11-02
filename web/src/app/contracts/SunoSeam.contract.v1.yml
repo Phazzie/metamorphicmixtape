@@ -1,0 +1,132 @@
+# Seam-Driven Contract: SunoSeam v1
+# Purpose: Suno AI optimization tools seam
+# Version: 1
+# Last Updated: 2025-11-01
+
+seam:
+  name: SunoSeam
+  version: 1
+  description: |
+    Provides access to Suno-specific tools for lyrics formatting and tag generation.
+    Optimizes content for Suno AI music generation.
+
+tools:
+  - name: format_for_suno
+    description: Convert lyrics to Suno-ready format
+    
+  - name: generate_suno_tags
+    description: Generate genre/style tags for Suno
+
+# Tool: format_for_suno
+format_for_suno:
+  inputs:
+    lyrics:
+      type: string
+      required: true
+      description: The lyrics to format
+      example: "Walking through empty streets..."
+    
+    optimization_level:
+      type: enum
+      required: true
+      values: ['minimal', 'balanced', 'aggressive']
+      default: 'balanced'
+      description: Level of formatting changes to apply
+      example: "balanced"
+
+  outputs:
+    formatted_lyrics:
+      type: string
+      description: Suno-ready formatted lyrics with structure markers
+      
+    changes_made:
+      type: array<string>
+      description: List of formatting changes applied
+      
+    suno_tips:
+      type: array<string>
+      description: Tips for best results with Suno
+
+# Tool: generate_suno_tags
+generate_suno_tags:
+  inputs:
+    lyrics:
+      type: string
+      required: true
+      description: Lyrics to analyze for tag generation
+      
+    desired_style:
+      type: string
+      required: true
+      description: Desired musical style
+      example: "indie folk"
+      
+    reference_songs:
+      type: array<string>
+      required: false
+      description: Optional reference songs
+      example: ["Bon Iver - Holocene"]
+
+  outputs:
+    primary_tags:
+      type: array<string>
+      description: Main genre/style tags
+      
+    secondary_tags:
+      type: array<string>
+      description: Supporting tags
+      
+    tag_explanation:
+      type: string
+      description: Reasoning for tag choices
+      
+    alternatives:
+      type: array<string>
+      description: Alternative tag suggestions
+      
+    usage_tips:
+      type: string
+      description: Tips for using the tags
+
+errors:
+  - code: TOOL_EXECUTION_ERROR
+    description: MCP tool execution failed
+    when: ToolApiSeam returns error
+    
+  - code: VALIDATION_ERROR
+    description: Input validation failed
+    when: Request doesn't match contract schema
+
+implementation:
+  language: TypeScript
+  framework: Angular 20
+  location: web/src/app/services/suno.service.ts
+  dependencies:
+    - ToolApiSeam (contract v1)
+    - suno.models.ts
+  models_location: web/src/app/models/suno.models.ts
+
+example_usage: |
+  // Inject the service
+  private suno = inject(SunoService);
+  
+  // Format lyrics
+  suno.formatForSuno({
+    lyrics: 'Walking through empty streets...',
+    optimization_level: 'balanced'
+  }).subscribe({
+    next: (response) => {
+      console.log('Formatted:', response.formatted_lyrics);
+      console.log('Tips:', response.suno_tips);
+    },
+    error: (err) => console.error(err)
+  });
+
+validation:
+  - Lyrics must be non-empty string
+  - optimization_level must be one of allowed values
+  - desired_style must be non-empty for generate_suno_tags
+
+notes: |
+  This seam implements the contract defined in contracts/tool-contracts/src/suno.ts
+  Optimizes content specifically for Suno AI's requirements and best practices.

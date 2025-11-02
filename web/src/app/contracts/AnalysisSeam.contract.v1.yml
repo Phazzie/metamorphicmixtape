@@ -1,0 +1,155 @@
+# Seam-Driven Contract: AnalysisSeam v1
+# Purpose: Analysis tools seam for emotional archaeology and evolution tracking
+# Version: 1
+# Last Updated: 2025-11-01
+
+seam:
+  name: AnalysisSeam
+  version: 1
+  description: |
+    Provides access to deep analysis tools for mining themes and tracking creative evolution.
+    Helps uncover authentic song concepts from text and track artistic growth.
+
+tools:
+  - name: emotional_archaeology
+    description: Mine digital life for authentic song themes
+    
+  - name: evolution_tracker
+    description: Track creative growth across songs
+
+# Tool: emotional_archaeology
+emotional_archaeology:
+  inputs:
+    text_samples:
+      type: array<string>
+      required: true
+      description: Text samples to analyze (conversations, journals)
+      example: ["Had a great conversation about...", "Feeling reflective today..."]
+    
+    focus_areas:
+      type: array<string>
+      required: true
+      description: Areas to focus analysis on
+      example: ["relationships", "growth"]
+    
+    depth:
+      type: enum
+      required: true
+      values: ['surface', 'moderate', 'deep']
+      default: 'moderate'
+      description: Depth of analysis
+      example: "moderate"
+
+  outputs:
+    extracted_themes:
+      type: array<object>
+      description: Discovered themes with evidence
+      schema: |
+        {
+          theme: string,
+          description: string,
+          evidence: string[],
+          song_potential: string
+        }
+      
+    emotional_patterns:
+      type: array<string>
+      description: Recurring emotional patterns
+      
+    voice_characteristics:
+      type: string
+      description: Analysis of authentic voice
+      
+    song_concepts:
+      type: array<string>
+      description: Potential song concepts
+
+# Tool: evolution_tracker
+evolution_tracker:
+  inputs:
+    songs:
+      type: array<object>
+      required: true
+      description: Songs to analyze for evolution
+      schema: |
+        {
+          title: string,
+          lyrics: string,
+          date_written: string
+        }
+      example: |
+        [
+          {
+            "title": "Empty Streets",
+            "lyrics": "Walking through...",
+            "date_written": "2025-01-15"
+          }
+        ]
+    
+    focus_dimensions:
+      type: array<string>
+      required: true
+      description: Dimensions to track
+      example: ["themes", "style", "complexity"]
+
+  outputs:
+    evolution_summary:
+      type: string
+      description: Overall evolution narrative
+      
+    growth_patterns:
+      type: array<string>
+      description: Identified patterns of growth
+      
+    style_shifts:
+      type: array<string>
+      description: Notable style changes
+      
+    recommendations:
+      type: array<string>
+      description: Suggestions for continued growth
+
+errors:
+  - code: TOOL_EXECUTION_ERROR
+    description: MCP tool execution failed
+    when: ToolApiSeam returns error
+    
+  - code: VALIDATION_ERROR
+    description: Input validation failed
+    when: Request doesn't match contract schema
+
+implementation:
+  language: TypeScript
+  framework: Angular 20
+  location: web/src/app/services/analysis.service.ts
+  dependencies:
+    - ToolApiSeam (contract v1)
+    - analysis.models.ts
+  models_location: web/src/app/models/analysis.models.ts
+
+example_usage: |
+  // Inject the service
+  private analysis = inject(AnalysisService);
+  
+  // Mine for themes
+  analysis.emotionalArchaeology({
+    text_samples: ['Had a great conversation...', 'Feeling reflective...'],
+    focus_areas: ['relationships', 'growth'],
+    depth: 'moderate'
+  }).subscribe({
+    next: (response) => {
+      console.log('Themes:', response.extracted_themes);
+      console.log('Concepts:', response.song_concepts);
+    },
+    error: (err) => console.error(err)
+  });
+
+validation:
+  - text_samples must have at least one entry
+  - focus_areas must have at least one entry
+  - songs must have at least one entry for evolution_tracker
+  - Each song must have title, lyrics, and date_written
+
+notes: |
+  This seam implements the contract defined in contracts/tool-contracts/src/analysis.ts
+  Provides deep analytical capabilities for authentic creative development.
