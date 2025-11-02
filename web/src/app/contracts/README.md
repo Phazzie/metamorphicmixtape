@@ -34,6 +34,11 @@ This is the foundational seam. All other seams depend on it.
 **Implementation:** `../services/analysis.service.ts`  
 **Purpose:** Analysis tools (emotional_archaeology, evolution_tracker)
 
+### ToolBrowserSeam (v1)
+**File:** `ToolBrowserSeam.contract.v1.yml`  
+**Implementation:** `../services/tool-browser.service.ts`  
+**Purpose:** Tool registry browsing and metadata retrieval
+
 ## Contract Structure
 
 Each contract follows this structure:

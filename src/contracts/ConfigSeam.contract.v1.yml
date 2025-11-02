@@ -1,0 +1,96 @@
+# Seam-Driven Contract: ConfigSeam v1
+# Purpose: Environment configuration and process environment access
+# Version: 1
+# Last Updated: 2025-11-02
+
+seam:
+  name: ConfigSeam
+  version: 1
+  description: |
+    Boundary for accessing environment variables and configuration settings
+    from process.env. This seam abstracts environment-specific configuration.
+
+configuration_points:
+  - name: PORT
+    location: src/adapters/http.ts
+    type: number
+    description: HTTP server port
+    default: 8080
+    required: false
+    example: "3000"
+    
+  - name: LOG_LEVEL
+    location: src/utils/logger.ts
+    type: enum
+    values: ['DEBUG', 'INFO', 'WARN', 'ERROR']
+    description: Logging verbosity level
+    default: 'INFO'
+    required: false
+    example: "DEBUG"
+    
+  - name: apiBaseUrl
+    location: web/src/environments/environment.ts
+    type: string
+    description: Base URL for HTTP API (frontend)
+    default: '' (relative URLs)
+    required: false
+    example: "http://localhost:8080"
+
+inputs:
+  key:
+    type: string
+    required: true
+    description: Environment variable name
+    example: "PORT"
+
+outputs:
+  value:
+    type: string | undefined
+    description: Environment variable value or undefined if not set
+
+errors:
+  - code: CONFIG_NOT_FOUND
+    description: Required configuration missing
+    when: Required env var not set
+    
+  - code: CONFIG_INVALID_TYPE
+    description: Configuration value has wrong type
+    when: Type conversion fails
+
+implementation:
+  language: TypeScript
+  framework: Node.js (backend) / Angular (frontend)
+  access_method: process.env (backend) / environment object (frontend)
+  current_usage:
+    - src/adapters/http.ts (PORT)
+    - src/utils/logger.ts (LOG_LEVEL)
+    - web/src/environments/environment.ts (apiBaseUrl)
+
+example_usage: |
+  // Backend (current pattern)
+  const PORT = process.env.PORT ? Number(process.env.PORT) : 8080;
+  const logLevel = process.env.LOG_LEVEL === 'DEBUG' ? LogLevel.DEBUG : LogLevel.INFO;
+  
+  // Frontend (current pattern)
+  import { environment } from './environments/environment';
+  const apiUrl = environment.apiBaseUrl;
+
+validation:
+  - PORT must be valid port number (1-65535) if provided
+  - LOG_LEVEL must be valid enum value if provided
+  - apiBaseUrl must be valid URL format if provided
+
+notes: |
+  This seam documents environment configuration boundaries.
+  
+  Current implementation uses direct process.env access which is acceptable
+  for simple cases. A future enhancement could create a Config service for:
+  - Type-safe access
+  - Validation on startup
+  - Default value management
+  - Configuration change detection
+  
+  For now, documenting this seam provides clarity on all configuration points
+  and their usage throughout the application.
+  
+  Frontend uses Angular's environment files which is the standard pattern.

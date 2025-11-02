@@ -1,18 +1,7 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-
-interface ToolContractView {
-  name: string;
-  title: string;
-  description: string;
-}
-
-interface ToolContractDetail extends ToolContractView {
-  inputSchema: Record<string, unknown>;
-  outputSchema?: Record<string, unknown>;
-  annotations?: Record<string, unknown>;
-}
+import { ToolBrowserService } from '../../services/tool-browser.service';
+import { ToolSummary, ToolContractDetail } from '../../models/tool-browser.models';
 
 @Component({
   selector: 'app-tool-browser',
@@ -22,47 +11,48 @@ interface ToolContractDetail extends ToolContractView {
   styleUrls: ['./tool-browser.component.scss']
 })
 export class ToolBrowserComponent implements OnInit {
-  private readonly http = inject(HttpClient);
+  private readonly toolBrowserService = inject(ToolBrowserService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
-  readonly tools = signal<ToolContractView[]>([]);
-  readonly selectedTool = signal<ToolContractView | null>(null);
+  readonly tools = signal<ToolSummary[]>([]);
+  readonly selectedTool = signal<ToolSummary | null>(null);
   readonly selectedContract = signal<ToolContractDetail | null>(null);
   readonly hasTools = computed(() => this.tools().length > 0);
 
   ngOnInit() {
-    void this.loadTools();
+    this.loadTools();
   }
 
-  async loadTools() {
+  loadTools() {
     this.loading.set(true);
     this.error.set(null);
 
-    try {
-      const response = await this.http
-        .get<{ tools: ToolContractView[] }>('/tools')
-        .toPromise();
-
-      this.tools.set(response?.tools ?? []);
-    } catch (error) {
-      console.error('Failed to load tools', error);
-      this.error.set('Unable to load tool registry.');
-    } finally {
-      this.loading.set(false);
-    }
+    this.toolBrowserService.listTools().subscribe({
+      next: (tools) => {
+        this.tools.set(tools);
+        this.loading.set(false);
+      },
+      error: (error) => {
+        console.error('Failed to load tools', error);
+        this.error.set('Unable to load tool registry.');
+        this.loading.set(false);
+      }
+    });
   }
 
-  async viewContract(tool: ToolContractView) {
+  viewContract(tool: ToolSummary) {
     this.selectedTool.set(tool);
     this.selectedContract.set(null);
 
-    try {
-      const response = await this.http.get<ToolContractDetail>(`/tools/${tool.name}`).toPromise();
-      this.selectedContract.set(response ?? null);
-    } catch (error) {
-      console.error('Failed to load tool contract', error);
-      this.error.set('Unable to load tool contract.');
-    }
+    this.toolBrowserService.getToolContract(tool.name).subscribe({
+      next: (contract) => {
+        this.selectedContract.set(contract);
+      },
+      error: (error) => {
+        console.error('Failed to load tool contract', error);
+        this.error.set('Unable to load tool contract.');
+      }
+    });
   }
 }
