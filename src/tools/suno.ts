@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { createAIMessage, parseToolResponse, formatToolOutput } from '../utils/tool-helpers.js';
 
 /**
  * Suno-Specific Tools
@@ -65,37 +66,28 @@ FORMAT YOUR RESPONSE AS JSON:
 
 Make this ready to copy-paste directly into Suno.`;
 
-      const response = await server.server.createMessage({
-        messages: [{ role: 'user', content: { type: 'text', text: prompt } }],
-        maxTokens: 1500
-      });
-
-      const responseText = response.content.type === 'text' ? response.content.text : '';
+      const responseText = await createAIMessage(server, prompt, 1500, 'format_for_suno');
       
-      let result;
-      try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('No JSON found');
-        result = JSON.parse(jsonMatch[0]);
-      } catch (error) {
-        result = {
+      const result = parseToolResponse(
+        responseText,
+        {
           formatted_lyrics: responseText,
           structure_markers: ['[Verse]', '[Chorus]'],
           formatting_notes: 'AI response could not be fully parsed. See formatted lyrics above.',
           suno_best_practices: ['Review formatting before using in Suno']
-        };
-      }
+        },
+        'format_for_suno'
+      );
 
-      return {
-        content: [{
-          type: 'text',
-          text: `# Suno-Formatted Lyrics\n\n${result.formatted_lyrics}\n\n` +
-                `**Structure Markers**: ${result.structure_markers.join(', ')}\n\n` +
-                `**Formatting Notes**: ${result.formatting_notes}\n\n` +
-                `**Suno Best Practices Applied**:\n${result.suno_best_practices.map((p: string) => `- ${p}`).join('\n')}`
-        }],
-        structuredContent: result
-      };
+      return formatToolOutput(
+        [
+          `# Suno-Formatted Lyrics\n\n${result.formatted_lyrics}`,
+          `**Structure Markers**: ${result.structure_markers.join(', ')}`,
+          `**Formatting Notes**: ${result.formatting_notes}`,
+          `**Suno Best Practices Applied**:\n${result.suno_best_practices.map((p: string) => `- ${p}`).join('\n')}`
+        ],
+        result
+      );
     }
   );
 

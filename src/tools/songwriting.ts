@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { createAIMessage, parseToolResponse, formatToolOutput } from '../utils/tool-helpers.js';
 
 /**
  * Core Songwriting Tools
@@ -75,39 +76,30 @@ FORMAT YOUR RESPONSE AS JSON:
 
 Focus on creating something that feels true, not just technically correct. Take creative risks.`;
 
-      const response = await server.server.createMessage({
-        messages: [{ role: 'user', content: { type: 'text', text: prompt } }],
-        maxTokens: 2000
-      });
-
-      const responseText = response.content.type === 'text' ? response.content.text : '';
+      const responseText = await createAIMessage(server, prompt, 2000, 'generate_lyrics');
       
-      let result;
-      try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('No JSON found');
-        result = JSON.parse(jsonMatch[0]);
-      } catch (error) {
-        result = {
+      const result = parseToolResponse(
+        responseText,
+        {
           lyrics: responseText,
           structure: 'Unknown',
           creative_notes: 'AI response could not be fully parsed. See lyrics above.',
           emotional_arc: 'See lyrics for emotional journey.',
           suggested_refinements: ['Review and refine manually based on your vision']
-        };
-      }
+        },
+        'generate_lyrics'
+      );
 
-      return {
-        content: [{
-          type: 'text',
-          text: `# Generated Lyrics\n\n${result.lyrics}\n\n` +
-                `**Structure**: ${result.structure}\n\n` +
-                `**Creative Notes**: ${result.creative_notes}\n\n` +
-                `**Emotional Arc**: ${result.emotional_arc}\n\n` +
-                `**Suggested Refinements**:\n${result.suggested_refinements.map((s: string) => `- ${s}`).join('\n')}`
-        }],
-        structuredContent: result
-      };
+      return formatToolOutput(
+        [
+          `# Generated Lyrics\n\n${result.lyrics}`,
+          `**Structure**: ${result.structure}`,
+          `**Creative Notes**: ${result.creative_notes}`,
+          `**Emotional Arc**: ${result.emotional_arc}`,
+          `**Suggested Refinements**:\n${result.suggested_refinements.map((s: string) => `- ${s}`).join('\n')}`
+        ],
+        result
+      );
     }
   );
 
