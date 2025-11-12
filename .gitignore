@@ -59,3 +59,7 @@ secrets.json
 # Test files
 test-*.js
 *.test.local.ts
+test/**/*.js
+test/**/*.d.ts
+test/**/*.d.ts.map
+test/**/*.js.map
