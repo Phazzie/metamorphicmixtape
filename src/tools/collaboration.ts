@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { createAIMessage, formatToolOutput } from '../utils/tool-helpers.js';
 
 /**
  * Collaboration Tools for Songwriting
@@ -110,15 +111,7 @@ OUTPUT REQUIREMENTS:
 
 Be thorough in extracting lyric versions even if they're embedded in discussion.`;
 
-      const response = await server.server.createMessage({
-        messages: [{
-          role: 'user',
-          content: { type: 'text', text: analysisPrompt }
-        }],
-        maxTokens: 2000
-      });
-
-      const analysis = response.content.type === 'text' ? response.content.text : 'Chat analysis failed';
+      const analysis = await createAIMessage(server, analysisPrompt, 2000, 'ai_chat_session_analyzer');
 
       // Parse the AI response to structure output
       // Note: In production, would use more sophisticated parsing
@@ -201,12 +194,15 @@ Be thorough in extracting lyric versions even if they're embedded in discussion.
         ]
       };
 
-      return {
-        content: [{
-          type: 'text',
-          text: `# AI Chat Session Analysis\n\n${analysis}\n\n---\n\n## Quick Stats\n- Total Turns: ${output.conversation_summary.total_turns}\n- Topic: ${output.conversation_summary.song_topic}\n- Versions Extracted: ${output.extracted_versions.length}\n\n## Ready for evolution_tracker\n${output.export_for_evolution_tracker.length} versions formatted and ready to use with evolution_tracker tool.`
-        }]
-      };
+      return formatToolOutput(
+        [
+          `# AI Chat Session Analysis\n\n${analysis}`,
+          `---`,
+          `## Quick Stats\n- Total Turns: ${output.conversation_summary.total_turns}\n- Topic: ${output.conversation_summary.song_topic}\n- Versions Extracted: ${output.extracted_versions.length}`,
+          `## Ready for evolution_tracker\n${output.export_for_evolution_tracker.length} versions formatted and ready to use with evolution_tracker tool.`
+        ],
+        output
+      );
     }
   );
 

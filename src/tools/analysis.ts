@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { createAIMessage, formatToolOutput } from '../utils/tool-helpers.js';
 
 /**
  * Analysis Tools for Songwriting
@@ -65,15 +66,7 @@ Generate a framework for analyzing these data sources to discover:
 Provide specific methods for each data source and how to extract songwriting gold from digital traces.
 Focus on ${emotional_depth} level insights while respecting ${privacy_level} privacy.`;
 
-      const response = await server.server.createMessage({
-        messages: [{
-          role: 'user',
-          content: { type: 'text', text: analysisPrompt }
-        }],
-        maxTokens: 1200
-      });
-
-      const analysis = response.content.type === 'text' ? response.content.text : 'Analysis framework failed';
+      const analysis = await createAIMessage(server, analysisPrompt, 1200, 'emotional_archaeology');
 
       const output = {
         emotional_patterns: [
@@ -109,13 +102,13 @@ Focus on ${emotional_depth} level insights while respecting ${privacy_level} pri
         ]
       };
 
-      return {
-        content: [{
-          type: 'text',
-          text: `# Emotional Archaeology Analysis\n\n${analysis}\n\n## Structured Insights\n${JSON.stringify(output, null, 2)}`
-        }],
-        structuredContent: output
-      };
+      return formatToolOutput(
+        [
+          `# Emotional Archaeology Analysis\n\n${analysis}`,
+          `## Structured Insights\n${JSON.stringify(output, null, 2)}`
+        ],
+        output
+      );
     }
   );
 
@@ -185,15 +178,7 @@ Track the evolution and identify:
 
 Provide insights at the ${pattern_depth} level focusing on ${analysis_focus}.`;
 
-      const response = await server.server.createMessage({
-        messages: [{
-          role: 'user',
-          content: { type: 'text', text: evolutionPrompt }
-        }],
-        maxTokens: 1300
-      });
-
-      const evolution = response.content.type === 'text' ? response.content.text : 'Evolution tracking failed';
+      const evolution = await createAIMessage(server, evolutionPrompt, 1300, 'evolution_tracker');
 
       const output = {
         evolution_timeline: [
@@ -317,15 +302,7 @@ Extract:
 Apply ${privacy_filter} privacy protection while preserving creative value.
 Focus on ${mining_focus} with ${extraction_depth} level analysis.`;
 
-      const response = await server.server.createMessage({
-        messages: [{
-          role: 'user',
-          content: { type: 'text', text: miningPrompt }
-        }],
-        maxTokens: 1200
-      });
-
-      const mining = response.content.type === 'text' ? response.content.text : 'Conversation mining failed';
+      const mining = await createAIMessage(server, miningPrompt, 1200, 'conversation_miner');
 
       const output = {
         song_seeds: [
@@ -460,15 +437,7 @@ Analyze:
 
 Provide specific suggestions for enhancing the emotional impact and flow.`;
 
-      const response = await server.server.createMessage({
-        messages: [{
-          role: 'user',
-          content: { type: 'text', text: mappingPrompt }
-        }],
-        maxTokens: 1400
-      });
-
-      const mapping = response.content.type === 'text' ? response.content.text : 'Journey mapping failed';
+      const mapping = await createAIMessage(server, mappingPrompt, 1400, 'emotional_journey_mapper');
 
       const output = {
         current_journey: {
@@ -529,13 +498,13 @@ Provide specific suggestions for enhancing the emotional impact and flow.`;
         ]
       };
 
-      return {
-        content: [{
-          type: 'text',
-          text: `# Emotional Journey Analysis\n\n${mapping}\n\n## Journey Optimization\n${JSON.stringify(output, null, 2)}`
-        }],
-        structuredContent: output
-      };
+      return formatToolOutput(
+        [
+          `# Emotional Journey Analysis\n\n${mapping}`,
+          `## Journey Optimization\n${JSON.stringify(output, null, 2)}`
+        ],
+        output
+      );
     }
   );
 }
