@@ -2,11 +2,11 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { registerSongwritingTools } from './tools/songwriting.js';
 import { registerAnalysisTools } from './tools/analysis.js';
-import { registerMetaTools } from './tools/meta.js';
-import { registerSunoTools } from './tools/suno.js';
 import { registerCollaborationTools } from './tools/collaboration.js';
+import { registerMetaTools } from './tools/meta.js';
+import { registerSongwritingTools } from './tools/songwriting.js';
+import { registerSunoTools } from './tools/suno.js';
 import { logger } from './utils/logger.js';
 
 /**

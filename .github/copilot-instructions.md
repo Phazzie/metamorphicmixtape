@@ -1,7 +1,11 @@
-# Suno MCP Server - Copilot Instructions
+# Metamorphic Mixtape - Copilot Instructions
 
 ## Project Overview
-This is an **AI-first** MCP (Model Context Protocol) server designed for professional songwriting workflows with Suno AI. The server prioritizes **intelligent AI analysis** over rule-based heuristics, providing meta-analytical tools, creative constraint generation, and deep pattern recognition.
+**Metamorphic Mixtape** is an AI-powered songwriting platform consisting of:
+1. **MCP Server** (existing): 17 AI-powered songwriting tools using Claude via Model Context Protocol
+2. **VS Code Extension** (in development): Native VS Code integration for seamless access to MCP tools
+
+This is an **AI-first** platform that prioritizes **intelligent AI analysis** over rule-based heuristics, providing meta-analytical tools, creative constraint generation, and deep pattern recognition directly within VS Code.
 
 ## Core Philosophy
 - **AI-Powered Analysis**: All tools leverage AI for insights, not hardcoded rules
@@ -10,6 +14,7 @@ This is an **AI-first** MCP (Model Context Protocol) server designed for profess
 - **Creative Amplification**: Tools designed to enhance human creativity, not replace it
 - **Iterative Evolution**: Version tracking and pattern learning across creative sessions
 - **Seam-Driven Development**: All interactions are explicit seams with versioned contracts; contracts precede code; regenerate on third failure
+- **LLM Provider**: Claude AI via GitHub Copilot (no migration needed)
 
 ## Architecture Principles
 
@@ -164,19 +169,40 @@ This keeps AI-generated content separate from project source code and makes it e
 - Track project evolution through saved plans
 - Gitignore if needed (add `.claudefiles/scratch/` to .gitignore)
 
+## Current Development Phase
+**Designing VS Code Extension Architecture**
+
+**Active Work**: Planning VS Code Extension integration patterns for MCP tools
+
+**Why VS Code Extension**: Native integration provides seamless access to MCP tools within the user's existing workflow, leveraging VS Code's rich extension API and MCP support.
+
+**Extension Approach**:
+- Native MCP integration via VS Code's Model Context Protocol support
+- Command palette access to all 17 songwriting tools
+- WebView-based UI for tool results and interactive workflows
+- Workspace integration for lyric file management
+- No external hosting or authentication needed (local-first)
+
 ## Integration Points
 
-### VS Code Integration
+### VS Code Integration (Existing)
 - Accessed through GitHub Copilot Chat via MCP
 - Tools appear as available functions
 - Structured output for easy parsing
 - File-based workflows supported
 
-### Claude Desktop Integration
+### Claude Desktop Integration (Existing)
 - stdio transport for direct communication
 - Same tools, different interface
 - Conversation-based workflow
 - Rich context passing
+
+### VS Code Extension Integration (In Development)
+- Native MCP transport via VS Code's built-in MCP support
+- Command palette access to all 17 tools
+- WebView panels for rich result visualization
+- Workspace file integration for saving/loading lyrics
+- No authentication required (local development environment)
 
 ## Common Patterns
 

@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { createAIMessage, parseToolResponse, formatToolOutput } from '../utils/tool-helpers.js';
 
 /**
  * Suno-Specific Tools
@@ -65,37 +66,28 @@ FORMAT YOUR RESPONSE AS JSON:
 
 Make this ready to copy-paste directly into Suno.`;
 
-      const response = await server.server.createMessage({
-        messages: [{ role: 'user', content: { type: 'text', text: prompt } }],
-        maxTokens: 1500
-      });
-
-      const responseText = response.content.type === 'text' ? response.content.text : '';
+      const responseText = await createAIMessage(server, prompt, 1500, 'format_for_suno');
       
-      let result;
-      try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('No JSON found');
-        result = JSON.parse(jsonMatch[0]);
-      } catch (error) {
-        result = {
+      const result = parseToolResponse(
+        responseText,
+        {
           formatted_lyrics: responseText,
           structure_markers: ['[Verse]', '[Chorus]'],
           formatting_notes: 'AI response could not be fully parsed. See formatted lyrics above.',
           suno_best_practices: ['Review formatting before using in Suno']
-        };
-      }
+        },
+        'format_for_suno'
+      );
 
-      return {
-        content: [{
-          type: 'text',
-          text: `# Suno-Formatted Lyrics\n\n${result.formatted_lyrics}\n\n` +
-                `**Structure Markers**: ${result.structure_markers.join(', ')}\n\n` +
-                `**Formatting Notes**: ${result.formatting_notes}\n\n` +
-                `**Suno Best Practices Applied**:\n${result.suno_best_practices.map((p: string) => `- ${p}`).join('\n')}`
-        }],
-        structuredContent: result
-      };
+      return formatToolOutput(
+        [
+          `# Suno-Formatted Lyrics\n\n${result.formatted_lyrics}`,
+          `**Structure Markers**: ${result.structure_markers.join(', ')}`,
+          `**Formatting Notes**: ${result.formatting_notes}`,
+          `**Suno Best Practices Applied**:\n${result.suno_best_practices.map((p: string) => `- ${p}`).join('\n')}`
+        ],
+        result
+      );
     }
   );
 
@@ -173,42 +165,33 @@ FORMAT YOUR RESPONSE AS JSON:
 
 Prioritize tags that will actually influence Suno's generation in meaningful ways.`;
 
-      const response = await server.server.createMessage({
-        messages: [{ role: 'user', content: { type: 'text', text: prompt } }],
-        maxTokens: 1200
-      });
-
-      const responseText = response.content.type === 'text' ? response.content.text : '';
+      const responseText = await createAIMessage(server, prompt, 1200, 'generate_suno_tags');
       
-      let result;
-      try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('No JSON found');
-        result = JSON.parse(jsonMatch[0]);
-      } catch (error) {
-        result = {
+      const result = parseToolResponse(
+        responseText,
+        {
           primary_tags: ['indie', 'folk', 'acoustic'],
           secondary_tags: ['melancholic', 'intimate'],
           tag_explanation: 'AI response could not be fully parsed. Default tags provided.',
           alternative_tag_sets: [],
           tag_usage_tips: ['Review and adjust tags based on your specific vision']
-        };
-      }
+        },
+        'generate_suno_tags'
+      );
 
-      return {
-        content: [{
-          type: 'text',
-          text: `# Suno Tags\n\n` +
-                `## Primary Tags\n${result.primary_tags.join(', ')}\n\n` +
-                `## Secondary Tags\n${result.secondary_tags.join(', ')}\n\n` +
-                `**Why These Tags**: ${result.tag_explanation}\n\n` +
-                `## Alternative Tag Sets\n\n${result.alternative_tag_sets.map((a: any) => 
-                  `**${a.description}**: ${a.tags.join(', ')}`
-                ).join('\n\n')}\n\n` +
-                `## Usage Tips\n${result.tag_usage_tips.map((t: string) => `- ${t}`).join('\n')}`
-        }],
-        structuredContent: result
-      };
+      return formatToolOutput(
+        [
+          `# Suno Tags`,
+          `## Primary Tags\n${result.primary_tags.join(', ')}`,
+          `## Secondary Tags\n${result.secondary_tags.join(', ')}`,
+          `**Why These Tags**: ${result.tag_explanation}`,
+          `## Alternative Tag Sets\n\n${result.alternative_tag_sets.map((a: any) => 
+            `**${a.description}**: ${a.tags.join(', ')}`
+          ).join('\n\n')}`,
+          `## Usage Tips\n${result.tag_usage_tips.map((t: string) => `- ${t}`).join('\n')}`
+        ],
+        result
+      );
     }
   );
 
@@ -293,21 +276,12 @@ FORMAT YOUR RESPONSE AS JSON:
 
 Create a prompt optimized for ${optimization_goal} results.`;
 
-      const response = await server.server.createMessage({
-        messages: [{ role: 'user', content: { type: 'text', text: prompt } }],
-        maxTokens: 1500
-      });
-
-      const responseText = response.content.type === 'text' ? response.content.text : '';
+      const responseText = await createAIMessage(server, prompt, 1500, 'optimize_suno_prompt');
       
-      let result;
-      try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('No JSON found');
-        result = JSON.parse(jsonMatch[0]);
-      } catch (error) {
-        const basicPrompt = `${tags.join(', ')}\n\n${lyrics}`;
-        result = {
+      const basicPrompt = `${tags.join(', ')}\n\n${lyrics}`;
+      const result = parseToolResponse(
+        responseText,
+        {
           optimized_prompt: basicPrompt,
           prompt_components: {
             title,
@@ -318,22 +292,22 @@ Create a prompt optimized for ${optimization_goal} results.`;
           optimization_notes: 'AI response could not be fully parsed. Basic prompt provided.',
           generation_tips: ['Review prompt before submitting to Suno'],
           expected_result: 'Suno should generate a song matching the tags and lyrics provided'
-        };
-      }
+        },
+        'optimize_suno_prompt'
+      );
 
-      return {
-        content: [{
-          type: 'text',
-          text: `# Optimized Suno Prompt\n\n\`\`\`\n${result.optimized_prompt}\n\`\`\`\n\n` +
-                `## Components\n` +
-                `${result.prompt_components.title ? `**Title**: ${result.prompt_components.title}\n` : ''}` +
-                `**Tags**: ${result.prompt_components.tags.join(', ')}\n\n` +
-                `**Optimization Notes**: ${result.optimization_notes}\n\n` +
-                `## Generation Tips\n${result.generation_tips.map((t: string) => `- ${t}`).join('\n')}\n\n` +
-                `**Expected Result**: ${result.expected_result}`
-        }],
-        structuredContent: result
-      };
+      return formatToolOutput(
+        [
+          `# Optimized Suno Prompt\n\n\`\`\`\n${result.optimized_prompt}\n\`\`\``,
+          `## Components\n` +
+          `${result.prompt_components.title ? `**Title**: ${result.prompt_components.title}\n` : ''}` +
+          `**Tags**: ${result.prompt_components.tags.join(', ')}`,
+          `**Optimization Notes**: ${result.optimization_notes}`,
+          `## Generation Tips\n${result.generation_tips.map((t: string) => `- ${t}`).join('\n')}`,
+          `**Expected Result**: ${result.expected_result}`
+        ],
+        result
+      );
     }
   );
 
@@ -428,20 +402,11 @@ FORMAT YOUR RESPONSE AS JSON:
 
 Help improve the next iteration based on this result.`;
 
-      const response = await server.server.createMessage({
-        messages: [{ role: 'user', content: { type: 'text', text: prompt } }],
-        maxTokens: 1500
-      });
-
-      const responseText = response.content.type === 'text' ? response.content.text : '';
+      const responseText = await createAIMessage(server, prompt, 1500, 'analyze_suno_output');
       
-      let result;
-      try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('No JSON found');
-        result = JSON.parse(jsonMatch[0]);
-      } catch (error) {
-        result = {
+      const result = parseToolResponse(
+        responseText,
+        {
           analysis: {
             successful_elements: what_worked || [],
             problematic_elements: what_didnt_work || [],
@@ -460,30 +425,30 @@ Help improve the next iteration based on this result.`;
           }],
           experimentation_ideas: [],
           generation_insights: responseText
-        };
-      }
+        },
+        'analyze_suno_output'
+      );
 
-      return {
-        content: [{
-          type: 'text',
-          text: `# Suno Output Analysis\n\n` +
-                `## What Happened\n\n` +
-                `**Successful**: ${result.analysis.successful_elements.join(', ')}\n\n` +
-                `**Problematic**: ${result.analysis.problematic_elements.join(', ')}\n\n` +
-                `**Likely Causes**: ${result.analysis.likely_causes.join('; ')}\n\n` +
-                `## Iteration Strategy\n\n` +
-                `**Keep**: ${result.iteration_strategy.keep.join(', ')}\n\n` +
-                `**Modify**: ${result.iteration_strategy.modify.join(', ')}\n\n` +
-                `**Remove**: ${result.iteration_strategy.remove.join(', ')}\n\n` +
-                `**Add**: ${result.iteration_strategy.add.join(', ')}\n\n` +
-                `## Suggested Changes\n\n${result.revised_prompt_suggestions.map((s: any) => 
-                  `**Change**: ${s.change}\n**Why**: ${s.rationale}\n**Expected Impact**: ${s.expected_impact}\n`
-                ).join('\n')}\n\n` +
-                `## Experimentation Ideas\n${result.experimentation_ideas.map((e: string) => `- ${e}`).join('\n')}\n\n` +
-                `## What We Learned\n${result.generation_insights}`
-        }],
-        structuredContent: result
-      };
+      return formatToolOutput(
+        [
+          `# Suno Output Analysis`,
+          `## What Happened\n\n` +
+          `**Successful**: ${result.analysis.successful_elements.join(', ')}\n\n` +
+          `**Problematic**: ${result.analysis.problematic_elements.join(', ')}\n\n` +
+          `**Likely Causes**: ${result.analysis.likely_causes.join('; ')}`,
+          `## Iteration Strategy\n\n` +
+          `**Keep**: ${result.iteration_strategy.keep.join(', ')}\n\n` +
+          `**Modify**: ${result.iteration_strategy.modify.join(', ')}\n\n` +
+          `**Remove**: ${result.iteration_strategy.remove.join(', ')}\n\n` +
+          `**Add**: ${result.iteration_strategy.add.join(', ')}`,
+          `## Suggested Changes\n\n${result.revised_prompt_suggestions.map((s: any) => 
+            `**Change**: ${s.change}\n**Why**: ${s.rationale}\n**Expected Impact**: ${s.expected_impact}\n`
+          ).join('\n')}`,
+          `## Experimentation Ideas\n${result.experimentation_ideas.map((e: string) => `- ${e}`).join('\n')}`,
+          `## What We Learned\n${result.generation_insights}`
+        ],
+        result
+      );
     }
   );
 }

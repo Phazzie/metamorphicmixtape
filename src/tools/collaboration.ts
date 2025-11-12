@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { createAIMessage, parseToolResponse, formatToolOutput } from '../utils/tool-helpers.js';
 
 /**
  * Collaboration Tools for Songwriting
@@ -110,15 +111,7 @@ OUTPUT REQUIREMENTS:
 
 Be thorough in extracting lyric versions even if they're embedded in discussion.`;
 
-      const response = await server.server.createMessage({
-        messages: [{
-          role: 'user',
-          content: { type: 'text', text: analysisPrompt }
-        }],
-        maxTokens: 2000
-      });
-
-      const analysis = response.content.type === 'text' ? response.content.text : 'Chat analysis failed';
+      const analysis = await createAIMessage(server, analysisPrompt, 2000, 'ai_chat_session_analyzer');
 
       // Parse the AI response to structure output
       // Note: In production, would use more sophisticated parsing
