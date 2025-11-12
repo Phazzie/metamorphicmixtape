@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { createAIMessage, formatToolOutput } from '../utils/tool-helpers.js';
 
 /**
  * Meta-Analytical Songwriting Tools
@@ -66,15 +67,7 @@ Extract:
 
 Provide deep insights that go beyond surface-level analysis.`;
 
-      const response = await server.server.createMessage({
-        messages: [{
-          role: 'user',
-          content: { type: 'text', text: analysisPrompt }
-        }],
-        maxTokens: 1500
-      });
-
-      const analysis = response.content.type === 'text' ? response.content.text : 'Analysis failed';
+      const analysis = await createAIMessage(server, analysisPrompt, 1500, 'extract_song_dna');
       
       // Parse the analysis into structured format
       const output = {
@@ -103,13 +96,13 @@ Provide deep insights that go beyond surface-level analysis.`;
         ]
       };
 
-      return {
-        content: [{ 
-          type: 'text', 
-          text: `# Song DNA Analysis\n\n${analysis}\n\n## Structured Insights\n${JSON.stringify(output, null, 2)}` 
-        }],
-        structuredContent: output
-      };
+      return formatToolOutput(
+        [
+          `# Song DNA Analysis\n\n${analysis}`,
+          `## Structured Insights\n${JSON.stringify(output, null, 2)}`
+        ],
+        output
+      );
     }
   );
 
@@ -158,15 +151,7 @@ Create constraints that:
 Generate 1 primary constraint and 3-5 supporting constraints that work together.
 Include examples of how these could lead to interesting results.`;
 
-      const response = await server.server.createMessage({
-        messages: [{
-          role: 'user',
-          content: { type: 'text', text: constraintPrompt }
-        }],
-        maxTokens: 1000
-      });
-
-      const constraints = response.content.type === 'text' ? response.content.text : 'Constraint generation failed';
+      const constraints = await createAIMessage(server, constraintPrompt, 1000, 'constraint_generator');
 
       const output = {
         primary_constraint: {
@@ -196,13 +181,13 @@ Include examples of how these could lead to interesting results.`;
         ]
       };
 
-      return {
-        content: [{
-          type: 'text',
-          text: `# Creative Constraints Generated\n\n${constraints}\n\n## Structured Output\n${JSON.stringify(output, null, 2)}`
-        }],
-        structuredContent: output
-      };
+      return formatToolOutput(
+        [
+          `# Creative Constraints Generated\n\n${constraints}`,
+          `## Structured Output\n${JSON.stringify(output, null, 2)}`
+        ],
+        output
+      );
     }
   );
 
@@ -252,15 +237,7 @@ Find unexpected connections that:
 Look for connections that are surprising but feel inevitable once discovered.
 Generate specific examples of how these bridges could work in lyrics.`;
 
-      const response = await server.server.createMessage({
-        messages: [{
-          role: 'user',
-          content: { type: 'text', text: bridgingPrompt }
-        }],
-        maxTokens: 1200
-      });
-
-      const bridges = response.content.type === 'text' ? response.content.text : 'Bridge generation failed';
+      const bridges = await createAIMessage(server, bridgingPrompt, 1200, 'semantic_bridging');
 
       const output = {
         primary_bridges: [
@@ -298,13 +275,13 @@ Generate specific examples of how these bridges could work in lyrics.`;
         ]
       };
 
-      return {
-        content: [{
-          type: 'text',
-          text: `# Semantic Bridges Created\n\n${bridges}\n\n## Structured Connections\n${JSON.stringify(output, null, 2)}`
-        }],
-        structuredContent: output
-      };
+      return formatToolOutput(
+        [
+          `# Semantic Bridges Created\n\n${bridges}`,
+          `## Structured Connections\n${JSON.stringify(output, null, 2)}`
+        ],
+        output
+      );
     }
   );
 
@@ -372,15 +349,7 @@ Create an interconnected musical universe where:
 
 Design the structure, connections, and creative opportunities for maximum impact.`;
 
-      const response = await server.server.createMessage({
-        messages: [{
-          role: 'user',
-          content: { type: 'text', text: ecosystemPrompt }
-        }],
-        maxTokens: 1500
-      });
-
-      const ecosystem = response.content.type === 'text' ? response.content.text : 'Ecosystem design failed';
+      const ecosystem = await createAIMessage(server, ecosystemPrompt, 1500, 'song_ecosystem_builder');
 
       const output = {
         ecosystem_structure: {
@@ -423,13 +392,13 @@ Design the structure, connections, and creative opportunities for maximum impact
         ]
       };
 
-      return {
-        content: [{
-          type: 'text',
-          text: `# Song Ecosystem Design\n\n${ecosystem}\n\n## Structured Framework\n${JSON.stringify(output, null, 2)}`
-        }],
-        structuredContent: output
-      };
+      return formatToolOutput(
+        [
+          `# Song Ecosystem Design\n\n${ecosystem}`,
+          `## Structured Framework\n${JSON.stringify(output, null, 2)}`
+        ],
+        output
+      );
     }
   );
 }
