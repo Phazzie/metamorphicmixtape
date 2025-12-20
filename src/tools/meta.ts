@@ -44,7 +44,6 @@ export async function registerMetaTools(server: McpServer) {
       }
     },
     async ({ songs, focus_areas, output_style }) => {
-      // AI analyzes the songs for deep patterns
       const analysisPrompt = `Analyze these songs for their creative DNA patterns:
 
 ${songs.map(song => `
@@ -64,7 +63,26 @@ Extract:
 4. Emotional journey mapping
 5. Unique elements that could be adapted to other contexts
 
-Provide deep insights that go beyond surface-level analysis.`;
+FORMAT YOUR RESPONSE AS JSON:
+{
+  "dna_patterns": [
+    {
+      "pattern_type": "type of pattern (structural, emotional, lyrical, etc.)",
+      "description": "detailed description of the pattern",
+      "examples": ["specific example from the songs"],
+      "creative_potential": "how this could be used in new work"
+    }
+  ],
+  "emotional_blueprint": {
+    "arc_description": "overall emotional journey description",
+    "key_transitions": ["transition point 1", "transition point 2"],
+    "tension_points": ["tension/climax point 1", "tension point 2"]
+  },
+  "inspiration_seeds": ["creative prompt 1", "creative prompt 2", "creative prompt 3"],
+  "application_suggestions": ["suggestion 1", "suggestion 2", "suggestion 3"]
+}
+
+Provide deep, specific insights based on the actual songs analyzed.`;
 
       const response = await server.server.createMessage({
         messages: [{
@@ -74,41 +92,39 @@ Provide deep insights that go beyond surface-level analysis.`;
         maxTokens: 1500
       });
 
-      const analysis = response.content.type === 'text' ? response.content.text : 'Analysis failed';
-      
-      // Parse the analysis into structured format
-      const output = {
-        dna_patterns: [
-          {
-            pattern_type: 'Analyzed Patterns',
-            description: analysis,
+      const responseText = response.content.type === 'text' ? response.content.text : '';
+
+      let result;
+      try {
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No JSON found');
+        result = JSON.parse(jsonMatch[0]);
+      } catch (error) {
+        result = {
+          dna_patterns: [{
+            pattern_type: 'Analysis',
+            description: responseText || 'Analysis failed',
             examples: songs.map(s => s.title),
-            creative_potential: 'High - patterns identified for adaptation'
-          }
-        ],
-        emotional_blueprint: {
-          arc_description: 'Emotional journey extracted from analyzed songs',
-          key_transitions: ['Verse to chorus transitions', 'Bridge emotional shifts'],
-          tension_points: ['Climactic moments', 'Emotional peaks']
-        },
-        inspiration_seeds: [
-          'Pattern-based creative prompts generated from analysis',
-          'Structural innovations discovered',
-          'Emotional techniques identified'
-        ],
-        application_suggestions: [
-          'Apply discovered patterns to new themes',
-          'Adapt structural innovations',
-          'Use emotional techniques in different contexts'
-        ]
-      };
+            creative_potential: 'Review the analysis above for insights'
+          }],
+          emotional_blueprint: {
+            arc_description: 'See analysis above',
+            key_transitions: [],
+            tension_points: []
+          },
+          inspiration_seeds: ['Review analysis for creative prompts'],
+          application_suggestions: ['Apply patterns discovered in analysis']
+        };
+      }
 
       return {
-        content: [{ 
-          type: 'text', 
-          text: `# Song DNA Analysis\n\n${analysis}\n\n## Structured Insights\n${JSON.stringify(output, null, 2)}` 
+        content: [{
+          type: 'text',
+          text: `# Song DNA Analysis\n\n## DNA Patterns\n${result.dna_patterns.map((p: any) =>
+            `### ${p.pattern_type}\n${p.description}\n**Examples**: ${p.examples.join(', ')}\n**Creative Potential**: ${p.creative_potential}`
+          ).join('\n\n')}\n\n## Emotional Blueprint\n${result.emotional_blueprint.arc_description}\n\n**Key Transitions**: ${result.emotional_blueprint.key_transitions.join(', ')}\n**Tension Points**: ${result.emotional_blueprint.tension_points.join(', ')}\n\n## Inspiration Seeds\n${result.inspiration_seeds.map((s: string) => `- ${s}`).join('\n')}\n\n## Application Suggestions\n${result.application_suggestions.map((s: string) => `- ${s}`).join('\n')}`
         }],
-        structuredContent: output
+        structuredContent: result
       };
     }
   );
@@ -155,8 +171,23 @@ Create constraints that:
 3. Lead to unexpected creative breakthroughs
 4. Are specific enough to guide but flexible enough to inspire
 
-Generate 1 primary constraint and 3-5 supporting constraints that work together.
-Include examples of how these could lead to interesting results.`;
+FORMAT YOUR RESPONSE AS JSON:
+{
+  "primary_constraint": {
+    "title": "Name of the primary constraint",
+    "description": "Detailed description of the constraint and how to apply it",
+    "creative_benefit": "What creative benefits this constraint provides",
+    "examples": ["Example of applying this constraint 1", "Example 2", "Example 3"]
+  },
+  "supporting_constraints": [
+    {"title": "Supporting constraint name", "description": "How this complements the primary constraint"}
+  ],
+  "creative_prompts": ["Prompt to inspire creative thinking 1", "Prompt 2", "Prompt 3"],
+  "breakthrough_potential": "Assessment of breakthrough potential and why",
+  "adaptation_suggestions": ["How to adapt constraint 1", "Adaptation 2", "Adaptation 3"]
+}
+
+Be specific and creative - generate constraints that will genuinely spark innovation.`;
 
       const response = await server.server.createMessage({
         messages: [{
@@ -166,42 +197,34 @@ Include examples of how these could lead to interesting results.`;
         maxTokens: 1000
       });
 
-      const constraints = response.content.type === 'text' ? response.content.text : 'Constraint generation failed';
+      const responseText = response.content.type === 'text' ? response.content.text : '';
 
-      const output = {
-        primary_constraint: {
-          title: `${constraint_type} Creative Challenge`,
-          description: constraints,
-          creative_benefit: 'Forces new creative pathways and unexpected solutions',
-          examples: [
-            'Example application 1',
-            'Example application 2',
-            'Example application 3'
-          ]
-        },
-        supporting_constraints: [
-          { title: 'Supporting Constraint A', description: 'Additional creative limitation' },
-          { title: 'Supporting Constraint B', description: 'Complementary restriction' }
-        ],
-        creative_prompts: [
-          'How would this constraint change your usual approach?',
-          'What unexpected solutions does this limitation suggest?',
-          'How can you turn this restriction into a creative advantage?'
-        ],
-        breakthrough_potential: 'High - designed to force creative innovation',
-        adaptation_suggestions: [
-          'Modify constraint intensity as needed',
-          'Combine with other creative techniques',
-          'Use as starting point for broader exploration'
-        ]
-      };
+      let result;
+      try {
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No JSON found');
+        result = JSON.parse(jsonMatch[0]);
+      } catch (error) {
+        result = {
+          primary_constraint: {
+            title: `${constraint_type} Creative Challenge`,
+            description: responseText || 'Constraint generation failed',
+            creative_benefit: 'Forces new creative pathways',
+            examples: ['See description above']
+          },
+          supporting_constraints: [],
+          creative_prompts: ['How would this constraint change your approach?'],
+          breakthrough_potential: 'Review the constraint description above',
+          adaptation_suggestions: ['Modify intensity as needed']
+        };
+      }
 
       return {
         content: [{
           type: 'text',
-          text: `# Creative Constraints Generated\n\n${constraints}\n\n## Structured Output\n${JSON.stringify(output, null, 2)}`
+          text: `# Creative Constraints\n\n## Primary Constraint: ${result.primary_constraint.title}\n\n${result.primary_constraint.description}\n\n**Creative Benefit**: ${result.primary_constraint.creative_benefit}\n\n**Examples**:\n${result.primary_constraint.examples.map((e: string) => `- ${e}`).join('\n')}\n\n## Supporting Constraints\n${result.supporting_constraints.map((c: any) => `### ${c.title}\n${c.description}`).join('\n\n')}\n\n## Creative Prompts\n${result.creative_prompts.map((p: string) => `- ${p}`).join('\n')}\n\n## Breakthrough Potential\n${result.breakthrough_potential}\n\n## Adaptation Suggestions\n${result.adaptation_suggestions.map((s: string) => `- ${s}`).join('\n')}`
         }],
-        structuredContent: output
+        structuredContent: result
       };
     }
   );
@@ -249,8 +272,28 @@ Find unexpected connections that:
 4. Spark emotional resonances
 5. Open new creative directions
 
-Look for connections that are surprising but feel inevitable once discovered.
-Generate specific examples of how these bridges could work in lyrics.`;
+FORMAT YOUR RESPONSE AS JSON:
+{
+  "primary_bridges": [
+    {
+      "connection_type": "type of connection (metaphorical, emotional, narrative, etc.)",
+      "bridge_description": "detailed description of how these concepts connect",
+      "lyrical_potential": "assessment of songwriting potential",
+      "example_lines": ["example lyric using this bridge", "another example line", "third example"]
+    }
+  ],
+  "creative_angles": ["unique angle 1", "unique angle 2", "unique angle 3"],
+  "metaphor_chains": [
+    {
+      "chain": ["concept A", "links to", "concept B"],
+      "narrative_potential": "how this chain could develop in a song"
+    }
+  ],
+  "unexpected_insights": ["surprising insight 1", "insight 2", "insight 3"],
+  "development_suggestions": ["how to develop these bridges 1", "suggestion 2", "suggestion 3"]
+}
+
+Be creative and find genuinely surprising connections. Include specific example lyric lines.`;
 
       const response = await server.server.createMessage({
         messages: [{
@@ -260,50 +303,41 @@ Generate specific examples of how these bridges could work in lyrics.`;
         maxTokens: 1200
       });
 
-      const bridges = response.content.type === 'text' ? response.content.text : 'Bridge generation failed';
+      const responseText = response.content.type === 'text' ? response.content.text : '';
 
-      const output = {
-        primary_bridges: [
-          {
+      let result;
+      try {
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No JSON found');
+        result = JSON.parse(jsonMatch[0]);
+      } catch (error) {
+        result = {
+          primary_bridges: [{
             connection_type: 'Conceptual Bridge',
-            bridge_description: bridges,
-            lyrical_potential: 'High - unexpected connections create memorable lyrics',
-            example_lines: [
-              'Example lyric line 1',
-              'Example lyric line 2',
-              'Example lyric line 3'
-            ]
-          }
-        ],
-        creative_angles: [
-          'Angle 1: Perspective shift opportunity',
-          'Angle 2: Narrative possibility',
-          'Angle 3: Emotional connection point'
-        ],
-        metaphor_chains: [
-          {
-            chain: concepts,
-            narrative_potential: 'Strong potential for extended metaphor development'
-          }
-        ],
-        unexpected_insights: [
-          'Surprising connection revealed',
-          'Hidden relationship discovered',
-          'New perspective unlocked'
-        ],
-        development_suggestions: [
-          'Expand the strongest bridges into full verses',
-          'Use weaker connections as subtle references',
-          'Combine multiple bridges for complex imagery'
-        ]
-      };
+            bridge_description: responseText || 'Bridge generation failed',
+            lyrical_potential: 'See description above',
+            example_lines: []
+          }],
+          creative_angles: [],
+          metaphor_chains: [{ chain: concepts, narrative_potential: 'Review bridges above' }],
+          unexpected_insights: [],
+          development_suggestions: ['Explore the connections described above']
+        };
+      }
 
       return {
         content: [{
           type: 'text',
-          text: `# Semantic Bridges Created\n\n${bridges}\n\n## Structured Connections\n${JSON.stringify(output, null, 2)}`
+          text: `# Semantic Bridges: ${concepts.join(' ↔ ')}\n\n` +
+            `## Primary Bridges\n${result.primary_bridges.map((b: any) =>
+              `### ${b.connection_type}\n${b.bridge_description}\n\n**Lyrical Potential**: ${b.lyrical_potential}\n\n**Example Lines**:\n${b.example_lines.map((l: string) => `> ${l}`).join('\n')}`
+            ).join('\n\n')}\n\n` +
+            `## Creative Angles\n${result.creative_angles.map((a: string) => `- ${a}`).join('\n')}\n\n` +
+            `## Metaphor Chains\n${result.metaphor_chains.map((m: any) => `**${m.chain.join(' → ')}**: ${m.narrative_potential}`).join('\n')}\n\n` +
+            `## Unexpected Insights\n${result.unexpected_insights.map((i: string) => `- ${i}`).join('\n')}\n\n` +
+            `## Development Suggestions\n${result.development_suggestions.map((s: string) => `- ${s}`).join('\n')}`
         }],
-        structuredContent: output
+        structuredContent: result
       };
     }
   );
@@ -356,7 +390,7 @@ Generate specific examples of how these bridges could work in lyrics.`;
       const ecosystemPrompt = `Design a song ecosystem:
 
 Central Theme: ${central_theme}
-Ecosystem Size: ${ecosystem_size}
+Ecosystem Size: ${ecosystem_size} (${ecosystem_size === 'trilogy' ? '3 songs' : ecosystem_size === 'concept_album' ? '8-12 songs' : '12+ songs'})
 Connection Style: ${connection_style}
 Creative Ambition: ${creative_ambition}
 
@@ -370,7 +404,32 @@ Create an interconnected musical universe where:
 4. Recurring elements evolve and deepen across songs
 5. The whole is greater than the sum of its parts
 
-Design the structure, connections, and creative opportunities for maximum impact.`;
+FORMAT YOUR RESPONSE AS JSON:
+{
+  "ecosystem_structure": {
+    "total_songs": 10,
+    "connection_map": [
+      {"song_a": "Song title", "song_b": "Other song", "connection_type": "type", "connection_detail": "how they connect"}
+    ],
+    "narrative_arc": "overall story/emotional arc description"
+  },
+  "song_concepts": [
+    {
+      "title": "Song title",
+      "role_in_ecosystem": "role this song plays",
+      "key_themes": ["theme 1", "theme 2"],
+      "connections_to_others": ["connection to song X", "reference to song Y"],
+      "unique_elements": ["unique element 1", "unique element 2"]
+    }
+  ],
+  "recurring_elements": [
+    {"element": "recurring element name", "appearances": ["Song 1", "Song 3"], "evolution": "how it changes across songs"}
+  ],
+  "creative_opportunities": ["opportunity 1", "opportunity 2"],
+  "fan_engagement_potential": ["engagement idea 1", "engagement idea 2"]
+}
+
+Design a complete, cohesive ecosystem with specific song concepts.`;
 
       const response = await server.server.createMessage({
         messages: [{
@@ -380,55 +439,41 @@ Design the structure, connections, and creative opportunities for maximum impact
         maxTokens: 1500
       });
 
-      const ecosystem = response.content.type === 'text' ? response.content.text : 'Ecosystem design failed';
+      const responseText = response.content.type === 'text' ? response.content.text : '';
 
-      const output = {
-        ecosystem_structure: {
-          total_songs: ecosystem_size === 'trilogy' ? 3 : ecosystem_size === 'concept_album' ? 10 : 15,
-          connection_map: [
-            {
-              song_a: 'Song 1',
-              song_b: 'Song 2',
-              connection_type: connection_style,
-              connection_detail: 'Specific connection details'
-            }
-          ],
-          narrative_arc: 'Overall narrative progression across the ecosystem'
-        },
-        song_concepts: [
-          {
-            title: 'Opening Song',
-            role_in_ecosystem: 'Introduction to the universe',
-            key_themes: ['Theme A', 'Theme B'],
-            connections_to_others: ['References to future songs'],
-            unique_elements: ['Distinctive musical/lyrical elements']
-          }
-        ],
-        recurring_elements: [
-          {
-            element: 'Central Metaphor',
-            appearances: ['Song 1', 'Song 3', 'Song 7'],
-            evolution: 'How the element changes and deepens'
-          }
-        ],
-        creative_opportunities: [
-          'Hidden connections for fans to discover',
-          'Easter eggs and deep cuts',
-          'Multi-layered meanings that emerge over time'
-        ],
-        fan_engagement_potential: [
-          'Theory crafting opportunities',
-          'Connection discovery challenges',
-          'Multiple interpretation layers'
-        ]
-      };
+      let result;
+      try {
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No JSON found');
+        result = JSON.parse(jsonMatch[0]);
+      } catch (error) {
+        result = {
+          ecosystem_structure: {
+            total_songs: ecosystem_size === 'trilogy' ? 3 : ecosystem_size === 'concept_album' ? 10 : 15,
+            connection_map: [],
+            narrative_arc: responseText || 'Ecosystem design failed'
+          },
+          song_concepts: [],
+          recurring_elements: [],
+          creative_opportunities: ['Review the ecosystem design above'],
+          fan_engagement_potential: ['Design connections based on narrative arc']
+        };
+      }
 
       return {
         content: [{
           type: 'text',
-          text: `# Song Ecosystem Design\n\n${ecosystem}\n\n## Structured Framework\n${JSON.stringify(output, null, 2)}`
+          text: `# Song Ecosystem: ${central_theme}\n\n` +
+            `## Structure\n**Total Songs**: ${result.ecosystem_structure.total_songs}\n**Narrative Arc**: ${result.ecosystem_structure.narrative_arc}\n\n` +
+            `## Connection Map\n${result.ecosystem_structure.connection_map.map((c: any) => `- **${c.song_a}** ↔ **${c.song_b}** (${c.connection_type}): ${c.connection_detail}`).join('\n')}\n\n` +
+            `## Song Concepts\n${result.song_concepts.map((s: any) =>
+              `### ${s.title}\n**Role**: ${s.role_in_ecosystem}\n**Themes**: ${s.key_themes.join(', ')}\n**Connections**: ${s.connections_to_others.join(', ')}\n**Unique Elements**: ${s.unique_elements.join(', ')}`
+            ).join('\n\n')}\n\n` +
+            `## Recurring Elements\n${result.recurring_elements.map((r: any) => `- **${r.element}**: Appears in ${r.appearances.join(', ')}. Evolution: ${r.evolution}`).join('\n')}\n\n` +
+            `## Creative Opportunities\n${result.creative_opportunities.map((o: string) => `- ${o}`).join('\n')}\n\n` +
+            `## Fan Engagement\n${result.fan_engagement_potential.map((f: string) => `- ${f}`).join('\n')}`
         }],
-        structuredContent: output
+        structuredContent: result
       };
     }
   );
