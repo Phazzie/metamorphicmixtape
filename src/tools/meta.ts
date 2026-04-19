@@ -1,16 +1,5 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import {
-  constraintGeneratorContractV1,
-  extractSongDnaContractV1,
-  semanticBridgingContractV1,
-  songEcosystemBuilderContractV1
-} from '@metamorphicmixtape/contracts/meta';
-import type {
-  ConstraintGeneratorInputV1,
-  ExtractSongDnaInputV1,
-  SemanticBridgingInputV1,
-  SongEcosystemBuilderInputV1
-} from '@metamorphicmixtape/contracts/meta';
+import { z } from 'zod';
 
 /**
  * Meta-Analytical Songwriting Tools
@@ -27,10 +16,34 @@ export async function registerMetaTools(server: McpServer) {
     {
       title: 'Extract Song DNA',
       description: 'Analyze successful songs to extract their creative patterns, emotional structure, and technical DNA for inspiration',
-      inputSchema: extractSongDnaContractV1.inputShape,
-      outputSchema: extractSongDnaContractV1.outputShape
+      inputSchema: {
+        songs: z.array(z.object({
+          title: z.string(),
+          artist: z.string(),
+          lyrics: z.string().optional(),
+          genre: z.string().optional(),
+          notes: z.string().optional()
+        })).describe('Songs to analyze for patterns'),
+        focus_areas: z.array(z.enum(['emotional_arc', 'lyrical_structure', 'rhyme_patterns', 'metaphor_usage', 'narrative_techniques', 'genre_elements'])).optional().describe('Specific aspects to analyze'),
+        output_style: z.enum(['detailed_analysis', 'pattern_summary', 'inspiration_prompts']).default('detailed_analysis')
+      },
+      outputSchema: {
+        dna_patterns: z.array(z.object({
+          pattern_type: z.string(),
+          description: z.string(),
+          examples: z.array(z.string()),
+          creative_potential: z.string()
+        })),
+        emotional_blueprint: z.object({
+          arc_description: z.string(),
+          key_transitions: z.array(z.string()),
+          tension_points: z.array(z.string())
+        }),
+        inspiration_seeds: z.array(z.string()),
+        application_suggestions: z.array(z.string())
+      }
     },
-    async ({ songs, focus_areas, output_style }: ExtractSongDnaInputV1) => {
+    async ({ songs, focus_areas, output_style }) => {
       const analysisPrompt = `Analyze these songs for their creative DNA patterns:
 
 ${songs.map(song => `
@@ -83,10 +96,9 @@ Provide deep, specific insights based on the actual songs analyzed.`;
 
       let result;
       try {
-        const jsonStart = responseText.indexOf('{');
-        const jsonEnd = responseText.lastIndexOf('}');
-        if (jsonStart === -1 || jsonEnd === -1 || jsonStart >= jsonEnd) throw new Error('No JSON found');
-        result = JSON.parse(responseText.slice(jsonStart, jsonEnd + 1));
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No JSON found');
+        result = JSON.parse(jsonMatch[0]);
       } catch (error) {
         result = {
           dna_patterns: [{
@@ -123,10 +135,29 @@ Provide deep, specific insights based on the actual songs analyzed.`;
     {
       title: 'Creative Constraint Generator',
       description: 'Generate interesting creative constraints and limitations to spark innovation and push creative boundaries',
-      inputSchema: constraintGeneratorContractV1.inputShape,
-      outputSchema: constraintGeneratorContractV1.outputShape
+      inputSchema: {
+        constraint_type: z.enum(['lyrical', 'structural', 'thematic', 'linguistic', 'narrative', 'experimental', 'genre_fusion']).describe('Type of constraint to generate'),
+        difficulty_level: z.enum(['gentle', 'moderate', 'challenging', 'extreme']).default('moderate'),
+        song_theme: z.string().optional().describe('Optional theme to tailor constraints around'),
+        creative_goals: z.array(z.string()).optional().describe('What you want to achieve creatively')
+      },
+      outputSchema: {
+        primary_constraint: z.object({
+          title: z.string(),
+          description: z.string(),
+          creative_benefit: z.string(),
+          examples: z.array(z.string())
+        }),
+        supporting_constraints: z.array(z.object({
+          title: z.string(),
+          description: z.string()
+        })),
+        creative_prompts: z.array(z.string()),
+        breakthrough_potential: z.string(),
+        adaptation_suggestions: z.array(z.string())
+      }
     },
-    async ({ constraint_type, difficulty_level, song_theme, creative_goals }: ConstraintGeneratorInputV1) => {
+    async ({ constraint_type, difficulty_level, song_theme, creative_goals }) => {
       const constraintPrompt = `Generate creative constraints for songwriting:
 
 Constraint Type: ${constraint_type}
@@ -170,10 +201,9 @@ Be specific and creative - generate constraints that will genuinely spark innova
 
       let result;
       try {
-        const jsonStart = responseText.indexOf('{');
-        const jsonEnd = responseText.lastIndexOf('}');
-        if (jsonStart === -1 || jsonEnd === -1 || jsonStart >= jsonEnd) throw new Error('No JSON found');
-        result = JSON.parse(responseText.slice(jsonStart, jsonEnd + 1));
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No JSON found');
+        result = JSON.parse(jsonMatch[0]);
       } catch (error) {
         result = {
           primary_constraint: {
@@ -205,10 +235,29 @@ Be specific and creative - generate constraints that will genuinely spark innova
     {
       title: 'Semantic Concept Bridging',
       description: 'Find unexpected creative connections between disparate concepts to generate unique song angles and metaphors',
-      inputSchema: semanticBridgingContractV1.inputShape,
-      outputSchema: semanticBridgingContractV1.outputShape
+      inputSchema: {
+        concepts: z.array(z.string()).min(2).describe('Concepts to bridge (minimum 2)'),
+        bridge_style: z.enum(['metaphorical', 'narrative', 'emotional', 'abstract', 'literal']).default('metaphorical'),
+        creative_intensity: z.enum(['subtle', 'moderate', 'bold', 'surreal']).default('moderate'),
+        song_context: z.string().optional().describe('Optional context for how this will be used in a song')
+      },
+      outputSchema: {
+        primary_bridges: z.array(z.object({
+          connection_type: z.string(),
+          bridge_description: z.string(),
+          lyrical_potential: z.string(),
+          example_lines: z.array(z.string())
+        })),
+        creative_angles: z.array(z.string()),
+        metaphor_chains: z.array(z.object({
+          chain: z.array(z.string()),
+          narrative_potential: z.string()
+        })),
+        unexpected_insights: z.array(z.string()),
+        development_suggestions: z.array(z.string())
+      }
     },
-    async ({ concepts, bridge_style, creative_intensity, song_context }: SemanticBridgingInputV1) => {
+    async ({ concepts, bridge_style, creative_intensity, song_context }) => {
       const bridgingPrompt = `Create semantic bridges between these concepts:
 
 Concepts: ${concepts.join(', ')}
@@ -258,10 +307,9 @@ Be creative and find genuinely surprising connections. Include specific example 
 
       let result;
       try {
-        const jsonStart = responseText.indexOf('{');
-        const jsonEnd = responseText.lastIndexOf('}');
-        if (jsonStart === -1 || jsonEnd === -1 || jsonStart >= jsonEnd) throw new Error('No JSON found');
-        result = JSON.parse(responseText.slice(jsonStart, jsonEnd + 1));
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No JSON found');
+        result = JSON.parse(jsonMatch[0]);
       } catch (error) {
         result = {
           primary_bridges: [{
@@ -300,25 +348,49 @@ Be creative and find genuinely surprising connections. Include specific example 
     {
       title: 'Song Ecosystem Builder',
       description: 'Create interconnected songs that reference each other, building cohesive musical universes and narrative continuity',
-      inputSchema: songEcosystemBuilderContractV1.inputShape,
-      outputSchema: songEcosystemBuilderContractV1.outputShape
+      inputSchema: {
+        central_theme: z.string().describe('Central theme or concept for the ecosystem'),
+        ecosystem_size: z.enum(['trilogy', 'concept_album', 'extended_universe']).default('concept_album'),
+        connection_style: z.enum(['narrative', 'character_based', 'thematic', 'metaphorical', 'temporal']).describe('How songs connect'),
+        existing_songs: z.array(z.object({
+          title: z.string(),
+          summary: z.string(),
+          key_elements: z.array(z.string())
+        })).optional().describe('Existing songs to incorporate'),
+        creative_ambition: z.enum(['subtle_connections', 'obvious_continuity', 'complex_web']).default('obvious_continuity')
+      },
+      outputSchema: {
+        ecosystem_structure: z.object({
+          total_songs: z.number(),
+          connection_map: z.array(z.object({
+            song_a: z.string(),
+            song_b: z.string(),
+            connection_type: z.string(),
+            connection_detail: z.string()
+          })),
+          narrative_arc: z.string()
+        }),
+        song_concepts: z.array(z.object({
+          title: z.string(),
+          role_in_ecosystem: z.string(),
+          key_themes: z.array(z.string()),
+          connections_to_others: z.array(z.string()),
+          unique_elements: z.array(z.string())
+        })),
+        recurring_elements: z.array(z.object({
+          element: z.string(),
+          appearances: z.array(z.string()),
+          evolution: z.string()
+        })),
+        creative_opportunities: z.array(z.string()),
+        fan_engagement_potential: z.array(z.string())
+      }
     },
-    async ({
-      central_theme,
-      ecosystem_size,
-      connection_style,
-      existing_songs,
-      creative_ambition
-    }: SongEcosystemBuilderInputV1) => {
-      const ecosystemSizeLabel: Record<string, string> = {
-        trilogy: '3 songs',
-        concept_album: '8-12 songs',
-        saga: '12+ songs'
-      };
+    async ({ central_theme, ecosystem_size, connection_style, existing_songs, creative_ambition }) => {
       const ecosystemPrompt = `Design a song ecosystem:
 
 Central Theme: ${central_theme}
-Ecosystem Size: ${ecosystem_size} (${ecosystemSizeLabel[ecosystem_size] ?? '12+ songs'})
+Ecosystem Size: ${ecosystem_size} (${ecosystem_size === 'trilogy' ? '3 songs' : ecosystem_size === 'concept_album' ? '8-12 songs' : '12+ songs'})
 Connection Style: ${connection_style}
 Creative Ambition: ${creative_ambition}
 
@@ -371,10 +443,9 @@ Design a complete, cohesive ecosystem with specific song concepts.`;
 
       let result;
       try {
-        const jsonStart = responseText.indexOf('{');
-        const jsonEnd = responseText.lastIndexOf('}');
-        if (jsonStart === -1 || jsonEnd === -1 || jsonStart >= jsonEnd) throw new Error('No JSON found');
-        result = JSON.parse(responseText.slice(jsonStart, jsonEnd + 1));
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No JSON found');
+        result = JSON.parse(jsonMatch[0]);
       } catch (error) {
         result = {
           ecosystem_structure: {

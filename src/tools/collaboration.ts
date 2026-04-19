@@ -1,12 +1,5 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import {
-  aiChatSessionAnalyzerContractV1,
-  chatExportHelperContractV1
-} from '@metamorphicmixtape/contracts/collaboration';
-import type {
-  AiChatSessionAnalyzerInputV1,
-  ChatExportHelperInputV1
-} from '@metamorphicmixtape/contracts/collaboration';
+import { z } from 'zod';
 
 /**
  * Collaboration Tools for Songwriting
@@ -23,17 +16,62 @@ export async function registerCollaborationTools(server: McpServer) {
     {
       title: 'AI Chat Session Analyzer',
       description: 'Parse ChatGPT, Claude, or Gemini conversation exports to extract lyric versions, creative decisions, and collaboration patterns',
-      inputSchema: aiChatSessionAnalyzerContractV1.inputShape,
-      outputSchema: aiChatSessionAnalyzerContractV1.outputShape
+      inputSchema: {
+        chat_export: z.string().describe('Full chat transcript (copy-paste from ChatGPT/Claude/Gemini export or conversation)'),
+        chat_format: z.enum(['chatgpt', 'claude', 'gemini', 'generic', 'auto-detect']).default('auto-detect').describe('Format of the chat export'),
+        analysis_focus: z.enum(['lyric_versions', 'creative_decisions', 'iteration_patterns', 'consensus_items', 'all']).default('all').describe('What aspects to focus analysis on'),
+        extract_versions: z.boolean().default(true).describe('Automatically extract different lyric versions from conversation'),
+        identify_consensus: z.boolean().default(true).describe('Find what you and AI agreed was best'),
+        track_evolution: z.boolean().default(true).describe('Track how ideas evolved through the conversation')
+      },
+      outputSchema: {
+        conversation_summary: z.object({
+          total_turns: z.number(),
+          user_messages: z.number(),
+          assistant_messages: z.number(),
+          song_topic: z.string(),
+          evolution_arc: z.string(),
+          conversation_length: z.string()
+        }),
+        extracted_versions: z.array(z.object({
+          version_number: z.number(),
+          position_in_chat: z.string(),
+          lyrics: z.string(),
+          context: z.string(),
+          user_reaction: z.string(),
+          changes_from_previous: z.array(z.string())
+        })),
+        creative_decisions: z.array(z.object({
+          decision: z.string(),
+          reasoning: z.string(),
+          your_input: z.string(),
+          ai_suggestion: z.string(),
+          consensus: z.enum(['user_led', 'ai_led', 'collaborative'])
+        })),
+        iteration_patterns: z.object({
+          what_you_refined_most: z.array(z.string()),
+          ai_strengths_shown: z.array(z.string()),
+          your_creative_direction: z.string(),
+          collaboration_style: z.string()
+        }),
+        final_state: z.object({
+          best_version: z.string(),
+          remaining_uncertainties: z.array(z.string()),
+          next_steps_mentioned: z.array(z.string())
+        }),
+        reusable_insights: z.array(z.object({
+          insight: z.string(),
+          apply_to: z.string()
+        })),
+        export_for_evolution_tracker: z.array(z.object({
+          version: z.string(),
+          timestamp: z.string(),
+          lyrics: z.string(),
+          notes: z.string()
+        }))
+      }
     },
-    async ({
-      chat_export,
-      chat_format,
-      analysis_focus,
-      extract_versions,
-      identify_consensus,
-      track_evolution
-    }: AiChatSessionAnalyzerInputV1) => {
+    async ({ chat_export, chat_format, analysis_focus, extract_versions, identify_consensus, track_evolution }) => {
       const analysisPrompt = `Analyze this AI chat session about songwriting:
 
 CHAT EXPORT:
@@ -117,10 +155,9 @@ Extract ACTUAL lyrics and content from the chat. Be thorough.`;
 
       let result;
       try {
-        const jsonStart = responseText.indexOf('{');
-        const jsonEnd = responseText.lastIndexOf('}');
-        if (jsonStart === -1 || jsonEnd === -1 || jsonStart >= jsonEnd) throw new Error('No JSON found');
-        result = JSON.parse(responseText.slice(jsonStart, jsonEnd + 1));
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No JSON found');
+        result = JSON.parse(jsonMatch[0]);
       } catch (error) {
         result = {
           conversation_summary: {
@@ -185,10 +222,19 @@ Extract ACTUAL lyrics and content from the chat. Be thorough.`;
     {
       title: 'Chat Export Helper',
       description: 'Get instructions on how to export conversations from ChatGPT, Claude, or Gemini',
-      inputSchema: chatExportHelperContractV1.inputShape,
-      outputSchema: chatExportHelperContractV1.outputShape
+      inputSchema: {
+        platform: z.enum(['chatgpt', 'claude', 'gemini', 'all']).default('all').describe('Which platform you need export instructions for')
+      },
+      outputSchema: {
+        instructions: z.array(z.object({
+          platform: z.string(),
+          method: z.string(),
+          steps: z.array(z.string()),
+          format_notes: z.string()
+        }))
+      }
     },
-    async ({ platform }: ChatExportHelperInputV1) => {
+    async ({ platform }) => {
       const instructions = {
         chatgpt: {
           platform: 'ChatGPT',
