@@ -83,9 +83,10 @@ Provide deep, specific insights based on the actual songs analyzed.`;
 
       let result;
       try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('No JSON found');
-        result = JSON.parse(jsonMatch[0]);
+        const jsonStart = responseText.indexOf('{');
+        const jsonEnd = responseText.lastIndexOf('}');
+        if (jsonStart === -1 || jsonEnd === -1 || jsonStart >= jsonEnd) throw new Error('No JSON found');
+        result = JSON.parse(responseText.slice(jsonStart, jsonEnd + 1));
       } catch (error) {
         result = {
           dna_patterns: [{
@@ -169,9 +170,10 @@ Be specific and creative - generate constraints that will genuinely spark innova
 
       let result;
       try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('No JSON found');
-        result = JSON.parse(jsonMatch[0]);
+        const jsonStart = responseText.indexOf('{');
+        const jsonEnd = responseText.lastIndexOf('}');
+        if (jsonStart === -1 || jsonEnd === -1 || jsonStart >= jsonEnd) throw new Error('No JSON found');
+        result = JSON.parse(responseText.slice(jsonStart, jsonEnd + 1));
       } catch (error) {
         result = {
           primary_constraint: {
@@ -256,9 +258,10 @@ Be creative and find genuinely surprising connections. Include specific example 
 
       let result;
       try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('No JSON found');
-        result = JSON.parse(jsonMatch[0]);
+        const jsonStart = responseText.indexOf('{');
+        const jsonEnd = responseText.lastIndexOf('}');
+        if (jsonStart === -1 || jsonEnd === -1 || jsonStart >= jsonEnd) throw new Error('No JSON found');
+        result = JSON.parse(responseText.slice(jsonStart, jsonEnd + 1));
       } catch (error) {
         result = {
           primary_bridges: [{
@@ -307,10 +310,15 @@ Be creative and find genuinely surprising connections. Include specific example 
       existing_songs,
       creative_ambition
     }: SongEcosystemBuilderInputV1) => {
+      const ecosystemSizeLabel: Record<string, string> = {
+        trilogy: '3 songs',
+        concept_album: '8-12 songs',
+        saga: '12+ songs'
+      };
       const ecosystemPrompt = `Design a song ecosystem:
 
 Central Theme: ${central_theme}
-Ecosystem Size: ${ecosystem_size} (${ecosystem_size === 'trilogy' ? '3 songs' : ecosystem_size === 'concept_album' ? '8-12 songs' : '12+ songs'})
+Ecosystem Size: ${ecosystem_size} (${ecosystemSizeLabel[ecosystem_size] ?? '12+ songs'})
 Connection Style: ${connection_style}
 Creative Ambition: ${creative_ambition}
 
@@ -363,9 +371,10 @@ Design a complete, cohesive ecosystem with specific song concepts.`;
 
       let result;
       try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('No JSON found');
-        result = JSON.parse(jsonMatch[0]);
+        const jsonStart = responseText.indexOf('{');
+        const jsonEnd = responseText.lastIndexOf('}');
+        if (jsonStart === -1 || jsonEnd === -1 || jsonStart >= jsonEnd) throw new Error('No JSON found');
+        result = JSON.parse(responseText.slice(jsonStart, jsonEnd + 1));
       } catch (error) {
         result = {
           ecosystem_structure: {

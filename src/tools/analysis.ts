@@ -87,9 +87,10 @@ Be specific and creative. Generate genuinely useful songwriting material.`;
 
       let result;
       try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('No JSON found');
-        result = JSON.parse(jsonMatch[0]);
+        const jsonStart = responseText.indexOf('{');
+        const jsonEnd = responseText.lastIndexOf('}');
+        if (jsonStart === -1 || jsonEnd === -1 || jsonStart >= jsonEnd) throw new Error('No JSON found');
+        result = JSON.parse(responseText.slice(jsonStart, jsonEnd + 1));
       } catch (error) {
         result = {
           emotional_patterns: [{
@@ -194,9 +195,10 @@ Analyze the actual lyrics provided and give specific, actionable insights.`;
 
       let result;
       try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('No JSON found');
-        result = JSON.parse(jsonMatch[0]);
+        const jsonStart = responseText.indexOf('{');
+        const jsonEnd = responseText.lastIndexOf('}');
+        if (jsonStart === -1 || jsonEnd === -1 || jsonStart >= jsonEnd) throw new Error('No JSON found');
+        result = JSON.parse(responseText.slice(jsonStart, jsonEnd + 1));
       } catch (error) {
         result = {
           evolution_timeline: song_versions.map((v, i) => ({
@@ -311,9 +313,10 @@ Extract real material from the actual conversation provided.`;
 
       let result;
       try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('No JSON found');
-        result = JSON.parse(jsonMatch[0]);
+        const jsonStart = responseText.indexOf('{');
+        const jsonEnd = responseText.lastIndexOf('}');
+        if (jsonStart === -1 || jsonEnd === -1 || jsonStart >= jsonEnd) throw new Error('No JSON found');
+        result = JSON.parse(responseText.slice(jsonStart, jsonEnd + 1));
       } catch (error) {
         result = {
           song_seeds: [{ concept: 'See analysis', emotional_core: responseText || 'Mining failed', original_context: '', creative_potential: '', suggested_approach: '' }],
@@ -422,9 +425,10 @@ Analyze the actual lyrics provided and give specific, actionable suggestions.`;
 
       let result;
       try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('No JSON found');
-        result = JSON.parse(jsonMatch[0]);
+        const jsonStart = responseText.indexOf('{');
+        const jsonEnd = responseText.lastIndexOf('}');
+        if (jsonStart === -1 || jsonEnd === -1 || jsonStart >= jsonEnd) throw new Error('No JSON found');
+        result = JSON.parse(responseText.slice(jsonStart, jsonEnd + 1));
       } catch (error) {
         result = {
           current_journey: {

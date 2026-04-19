@@ -117,9 +117,10 @@ Extract ACTUAL lyrics and content from the chat. Be thorough.`;
 
       let result;
       try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('No JSON found');
-        result = JSON.parse(jsonMatch[0]);
+        const jsonStart = responseText.indexOf('{');
+        const jsonEnd = responseText.lastIndexOf('}');
+        if (jsonStart === -1 || jsonEnd === -1 || jsonStart >= jsonEnd) throw new Error('No JSON found');
+        result = JSON.parse(responseText.slice(jsonStart, jsonEnd + 1));
       } catch (error) {
         result = {
           conversation_summary: {
