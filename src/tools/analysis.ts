@@ -46,10 +46,9 @@ export async function registerAnalysisTools(server: McpServer) {
       }
     },
     async ({ data_sources, time_period, emotional_depth, privacy_level, theme_focus }) => {
-      // Since we can't actually access user data, we provide a framework for analysis
-      const analysisPrompt = `Perform emotional archaeology analysis:
+      const analysisPrompt = `Perform emotional archaeology analysis for songwriting:
 
-Data Sources: ${data_sources.join(', ')}
+Data Sources to Analyze: ${data_sources.join(', ')}
 Time Period: ${time_period}
 Emotional Depth: ${emotional_depth}
 Privacy Level: ${privacy_level}
@@ -62,8 +61,34 @@ Generate a framework for analyzing these data sources to discover:
 4. Subconscious themes that could become songs
 5. Creative angles on personal experiences
 
-Provide specific methods for each data source and how to extract songwriting gold from digital traces.
-Focus on ${emotional_depth} level insights while respecting ${privacy_level} privacy.`;
+FORMAT YOUR RESPONSE AS JSON:
+{
+  "emotional_patterns": [
+    {
+      "theme": "emotional theme name",
+      "intensity": 7,
+      "frequency": "how often this appears",
+      "context": "where/how this manifests",
+      "song_potential": "why this would make a good song"
+    }
+  ],
+  "hidden_themes": [
+    {
+      "theme": "discovered theme",
+      "evidence": ["pattern 1", "pattern 2"],
+      "creative_angle": "unique songwriting approach"
+    }
+  ],
+  "temporal_patterns": {
+    "recurring_cycles": ["cycle 1", "cycle 2"],
+    "seasonal_themes": ["seasonal pattern 1"],
+    "growth_areas": ["area of change 1"]
+  },
+  "songwriting_prompts": ["specific prompt 1", "prompt 2", "prompt 3"],
+  "creative_insights": ["insight 1", "insight 2", "insight 3"]
+}
+
+Be specific and creative. Generate genuinely useful songwriting material.`;
 
       const response = await server.server.createMessage({
         messages: [{
@@ -73,48 +98,44 @@ Focus on ${emotional_depth} level insights while respecting ${privacy_level} pri
         maxTokens: 1200
       });
 
-      const analysis = response.content.type === 'text' ? response.content.text : 'Analysis framework failed';
+      const responseText = response.content.type === 'text' ? response.content.text : '';
 
-      const output = {
-        emotional_patterns: [
-          {
-            theme: 'Sample Emotional Theme',
-            intensity: 7,
-            frequency: 'Weekly recurring',
-            context: 'Digital communication patterns',
-            song_potential: 'High - relatable universal experience'
-          }
-        ],
-        hidden_themes: [
-          {
-            theme: 'Discovered Theme',
-            evidence: ['Pattern A', 'Pattern B', 'Pattern C'],
-            creative_angle: 'Unique perspective for songwriting'
-          }
-        ],
-        temporal_patterns: {
-          recurring_cycles: ['Weekly patterns', 'Monthly cycles'],
-          seasonal_themes: ['Spring themes', 'Winter moods'],
-          growth_areas: ['Evolving interests', 'Changing perspectives']
-        },
-        songwriting_prompts: [
-          'Prompt based on discovered patterns',
-          'Creative angle from emotional archaeology',
-          'Personal theme universalized for broad appeal'
-        ],
-        creative_insights: [
-          'Insight about hidden emotional patterns',
-          'Discovery about personal creative themes',
-          'Understanding of emotional cycles'
-        ]
-      };
+      let result;
+      try {
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No JSON found');
+        result = JSON.parse(jsonMatch[0]);
+      } catch (error) {
+        result = {
+          emotional_patterns: [{
+            theme: 'Analysis Framework',
+            intensity: 5,
+            frequency: 'See analysis',
+            context: responseText || 'Analysis failed',
+            song_potential: 'Review the framework above'
+          }],
+          hidden_themes: [],
+          temporal_patterns: { recurring_cycles: [], seasonal_themes: [], growth_areas: [] },
+          songwriting_prompts: ['Explore themes from the analysis above'],
+          creative_insights: ['See detailed analysis']
+        };
+      }
 
       return {
         content: [{
           type: 'text',
-          text: `# Emotional Archaeology Analysis\n\n${analysis}\n\n## Structured Insights\n${JSON.stringify(output, null, 2)}`
+          text: `# Emotional Archaeology Analysis\n\n` +
+            `## Emotional Patterns\n${result.emotional_patterns.map((p: any) =>
+              `### ${p.theme} (Intensity: ${p.intensity}/10)\n**Frequency**: ${p.frequency}\n**Context**: ${p.context}\n**Song Potential**: ${p.song_potential}`
+            ).join('\n\n')}\n\n` +
+            `## Hidden Themes\n${result.hidden_themes.map((t: any) =>
+              `### ${t.theme}\n**Evidence**: ${t.evidence.join(', ')}\n**Creative Angle**: ${t.creative_angle}`
+            ).join('\n\n')}\n\n` +
+            `## Temporal Patterns\n**Recurring Cycles**: ${result.temporal_patterns.recurring_cycles.join(', ')}\n**Seasonal Themes**: ${result.temporal_patterns.seasonal_themes.join(', ')}\n**Growth Areas**: ${result.temporal_patterns.growth_areas.join(', ')}\n\n` +
+            `## Songwriting Prompts\n${result.songwriting_prompts.map((p: string) => `- ${p}`).join('\n')}\n\n` +
+            `## Creative Insights\n${result.creative_insights.map((i: string) => `- ${i}`).join('\n')}`
         }],
-        structuredContent: output
+        structuredContent: result
       };
     }
   );
@@ -163,7 +184,7 @@ Focus on ${emotional_depth} level insights while respecting ${privacy_level} pri
       }
     },
     async ({ song_versions, analysis_focus, time_span, pattern_depth }) => {
-      const evolutionPrompt = `Analyze creative evolution:
+      const evolutionPrompt = `Analyze creative evolution of these song versions:
 
 Song Versions:
 ${song_versions.map(v => `
@@ -183,7 +204,32 @@ Track the evolution and identify:
 4. Areas of consistent strength and growth
 5. Trajectory predictions and recommendations
 
-Provide insights at the ${pattern_depth} level focusing on ${analysis_focus}.`;
+FORMAT YOUR RESPONSE AS JSON:
+{
+  "evolution_timeline": [
+    {
+      "stage": "version name/stage",
+      "characteristics": ["characteristic 1", "characteristic 2"],
+      "key_changes": ["change from previous"],
+      "quality_metrics": {"creativity": 7, "technical_skill": 6, "emotional_depth": 8}
+    }
+  ],
+  "growth_patterns": [
+    {
+      "pattern": "pattern name",
+      "evidence": ["evidence 1", "evidence 2"],
+      "trajectory": "direction of growth",
+      "potential": "future potential assessment"
+    }
+  ],
+  "creative_insights": ["insight 1", "insight 2", "insight 3"],
+  "recommendations": [
+    {"area": "area to improve", "suggestion": "specific suggestion", "rationale": "why this helps"}
+  ],
+  "future_potential": ["potential 1", "potential 2"]
+}
+
+Analyze the actual lyrics provided and give specific, actionable insights.`;
 
       const response = await server.server.createMessage({
         messages: [{
@@ -193,64 +239,45 @@ Provide insights at the ${pattern_depth} level focusing on ${analysis_focus}.`;
         maxTokens: 1300
       });
 
-      const evolution = response.content.type === 'text' ? response.content.text : 'Evolution tracking failed';
+      const responseText = response.content.type === 'text' ? response.content.text : '';
 
-      const output = {
-        evolution_timeline: [
-          {
-            stage: 'Initial Version',
-            characteristics: ['Raw creativity', 'Initial concepts'],
-            key_changes: ['First draft elements'],
-            quality_metrics: {
-              creativity: 6,
-              technical_skill: 4,
-              emotional_depth: 5
-            }
-          },
-          {
-            stage: 'Refined Version',
-            characteristics: ['Improved structure', 'Better flow'],
-            key_changes: ['Enhanced imagery', 'Stronger transitions'],
-            quality_metrics: {
-              creativity: 7,
-              technical_skill: 7,
-              emotional_depth: 8
-            }
-          }
-        ],
-        growth_patterns: [
-          {
-            pattern: 'Improving Metaphor Usage',
-            evidence: ['Version 1 had simple metaphors', 'Version 2 shows layered imagery'],
-            trajectory: 'Accelerating improvement',
-            potential: 'High - shows natural talent development'
-          }
-        ],
-        creative_insights: [
-          'Shows consistent improvement in emotional depth',
-          'Technical skills developing rapidly',
-          'Unique voice emerging through iterations'
-        ],
-        recommendations: [
-          {
-            area: 'Structural Experimentation',
-            suggestion: 'Try non-traditional song structures',
-            rationale: 'Current growth pattern suggests readiness for complexity'
-          }
-        ],
-        future_potential: [
-          'Strong trajectory suggests breakthrough potential',
-          'Developing signature style',
-          'Ready for more challenging creative projects'
-        ]
-      };
+      let result;
+      try {
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No JSON found');
+        result = JSON.parse(jsonMatch[0]);
+      } catch (error) {
+        result = {
+          evolution_timeline: song_versions.map((v, i) => ({
+            stage: v.version,
+            characteristics: ['See analysis'],
+            key_changes: i === 0 ? ['Initial version'] : ['Changes from previous'],
+            quality_metrics: { creativity: 5, technical_skill: 5, emotional_depth: 5 }
+          })),
+          growth_patterns: [{ pattern: 'See analysis', evidence: [], trajectory: responseText || 'Analysis failed', potential: 'Review above' }],
+          creative_insights: ['Review the detailed analysis'],
+          recommendations: [],
+          future_potential: ['Based on the evolution pattern above']
+        };
+      }
 
       return {
         content: [{
           type: 'text',
-          text: `# Creative Evolution Analysis\n\n${evolution}\n\n## Structured Tracking\n${JSON.stringify(output, null, 2)}`
+          text: `# Creative Evolution Analysis\n\n` +
+            `## Evolution Timeline\n${result.evolution_timeline.map((s: any) =>
+              `### ${s.stage}\n**Characteristics**: ${s.characteristics.join(', ')}\n**Key Changes**: ${s.key_changes.join(', ')}\n**Quality Metrics**: Creativity ${s.quality_metrics.creativity}/10, Technical ${s.quality_metrics.technical_skill}/10, Emotional ${s.quality_metrics.emotional_depth}/10`
+            ).join('\n\n')}\n\n` +
+            `## Growth Patterns\n${result.growth_patterns.map((p: any) =>
+              `### ${p.pattern}\n**Evidence**: ${p.evidence.join(', ')}\n**Trajectory**: ${p.trajectory}\n**Potential**: ${p.potential}`
+            ).join('\n\n')}\n\n` +
+            `## Creative Insights\n${result.creative_insights.map((i: string) => `- ${i}`).join('\n')}\n\n` +
+            `## Recommendations\n${result.recommendations.map((r: any) =>
+              `### ${r.area}\n${r.suggestion}\n*Rationale*: ${r.rationale}`
+            ).join('\n\n')}\n\n` +
+            `## Future Potential\n${result.future_potential.map((f: string) => `- ${f}`).join('\n')}`
         }],
-        structuredContent: output
+        structuredContent: result
       };
     }
   );
@@ -314,8 +341,44 @@ Extract:
 4. Relationship dynamics with narrative potential
 5. Universal themes that could resonate broadly
 
-Apply ${privacy_filter} privacy protection while preserving creative value.
-Focus on ${mining_focus} with ${extraction_depth} level analysis.`;
+FORMAT YOUR RESPONSE AS JSON:
+{
+  "song_seeds": [
+    {
+      "concept": "song concept extracted",
+      "emotional_core": "the core emotion/feeling",
+      "original_context": "where in conversation this came from",
+      "creative_potential": "assessment of songwriting potential",
+      "suggested_approach": "how to develop this into a song"
+    }
+  ],
+  "memorable_phrases": [
+    {
+      "phrase": "actual phrase from conversation",
+      "context": "context it appeared in",
+      "lyrical_potential": "how it could work as lyrics",
+      "adaptation_ideas": ["idea 1", "idea 2"]
+    }
+  ],
+  "emotional_moments": [
+    {
+      "moment_description": "description of the moment",
+      "emotional_intensity": 8,
+      "universality": "how universal this experience is",
+      "song_angle": "angle for songwriting"
+    }
+  ],
+  "relationship_dynamics": [
+    {
+      "dynamic": "relationship pattern",
+      "song_potential": "potential for song",
+      "narrative_approach": "storytelling approach"
+    }
+  ],
+  "creative_prompts": ["prompt 1", "prompt 2", "prompt 3"]
+}
+
+Extract real material from the actual conversation provided.`;
 
       const response = await server.server.createMessage({
         messages: [{
@@ -325,58 +388,42 @@ Focus on ${mining_focus} with ${extraction_depth} level analysis.`;
         maxTokens: 1200
       });
 
-      const mining = response.content.type === 'text' ? response.content.text : 'Conversation mining failed';
+      const responseText = response.content.type === 'text' ? response.content.text : '';
 
-      const output = {
-        song_seeds: [
-          {
-            concept: 'Extracted song concept',
-            emotional_core: 'Core emotional theme identified',
-            original_context: 'Where this appeared in conversation',
-            creative_potential: 'High - universal relatable theme',
-            suggested_approach: 'Recommended creative development approach'
-          }
-        ],
-        memorable_phrases: [
-          {
-            phrase: 'Notable phrase from conversation',
-            context: 'Context where it appeared',
-            lyrical_potential: 'Strong - could work as hook or key line',
-            adaptation_ideas: [
-              'Use as chorus hook',
-              'Develop into full verse',
-              'Create metaphorical extension'
-            ]
-          }
-        ],
-        emotional_moments: [
-          {
-            moment_description: 'Significant emotional moment identified',
-            emotional_intensity: 8,
-            universality: 'Highly universal experience',
-            song_angle: 'Suggested approach for song development'
-          }
-        ],
-        relationship_dynamics: [
-          {
-            dynamic: 'Relationship pattern observed',
-            song_potential: 'Strong narrative potential',
-            narrative_approach: 'Suggested storytelling method'
-          }
-        ],
-        creative_prompts: [
-          'What if this conversation happened at a different time?',
-          'How would this feeling translate to a different context?',
-          'What universal truth does this moment reveal?'
-        ]
-      };
+      let result;
+      try {
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No JSON found');
+        result = JSON.parse(jsonMatch[0]);
+      } catch (error) {
+        result = {
+          song_seeds: [{ concept: 'See analysis', emotional_core: responseText || 'Mining failed', original_context: '', creative_potential: '', suggested_approach: '' }],
+          memorable_phrases: [],
+          emotional_moments: [],
+          relationship_dynamics: [],
+          creative_prompts: ['Review the analysis above for prompts']
+        };
+      }
 
       return {
         content: [{
           type: 'text',
-          text: `# Conversation Mining Results\n\n${mining}\n\n## Extracted Elements\n${JSON.stringify(output, null, 2)}`
+          text: `# Conversation Mining Results\n\n` +
+            `## Song Seeds\n${result.song_seeds.map((s: any) =>
+              `### ${s.concept}\n**Emotional Core**: ${s.emotional_core}\n**Context**: ${s.original_context}\n**Creative Potential**: ${s.creative_potential}\n**Suggested Approach**: ${s.suggested_approach}`
+            ).join('\n\n')}\n\n` +
+            `## Memorable Phrases\n${result.memorable_phrases.map((p: any) =>
+              `> "${p.phrase}"\n**Context**: ${p.context}\n**Lyrical Potential**: ${p.lyrical_potential}\n**Adaptation Ideas**: ${p.adaptation_ideas.join(', ')}`
+            ).join('\n\n')}\n\n` +
+            `## Emotional Moments\n${result.emotional_moments.map((m: any) =>
+              `### ${m.moment_description} (Intensity: ${m.emotional_intensity}/10)\n**Universality**: ${m.universality}\n**Song Angle**: ${m.song_angle}`
+            ).join('\n\n')}\n\n` +
+            `## Relationship Dynamics\n${result.relationship_dynamics.map((d: any) =>
+              `### ${d.dynamic}\n**Song Potential**: ${d.song_potential}\n**Narrative Approach**: ${d.narrative_approach}`
+            ).join('\n\n')}\n\n` +
+            `## Creative Prompts\n${result.creative_prompts.map((p: string) => `- ${p}`).join('\n')}`
         }],
-        structuredContent: output
+        structuredContent: result
       };
     }
   );
@@ -458,7 +505,32 @@ Analyze:
 4. Areas for optimization
 5. Alternative journey possibilities
 
-Provide specific suggestions for enhancing the emotional impact and flow.`;
+FORMAT YOUR RESPONSE AS JSON:
+{
+  "current_journey": {
+    "emotional_arc": [
+      {"section": "section name", "emotion": "current emotion", "intensity": 5, "transition_quality": "quality description"}
+    ],
+    "journey_analysis": "analysis of current emotional flow",
+    "strengths": ["strength 1", "strength 2"],
+    "weaknesses": ["weakness 1", "weakness 2"]
+  },
+  "optimized_journey": {
+    "suggested_arc": [
+      {"section": "section name", "target_emotion": "emotion", "target_intensity": 7, "transition_method": "how to transition"}
+    ],
+    "optimization_rationale": "why these changes improve the song",
+    "key_changes": ["change 1", "change 2"]
+  },
+  "enhancement_suggestions": [
+    {"area": "area to enhance", "current_state": "current state", "suggested_improvement": "improvement", "implementation": "how to implement"}
+  ],
+  "alternative_journeys": [
+    {"journey_type": "journey name", "description": "description", "emotional_impact": "expected impact"}
+  ]
+}
+
+Analyze the actual lyrics provided and give specific, actionable suggestions.`;
 
       const response = await server.server.createMessage({
         messages: [{
@@ -468,73 +540,53 @@ Provide specific suggestions for enhancing the emotional impact and flow.`;
         maxTokens: 1400
       });
 
-      const mapping = response.content.type === 'text' ? response.content.text : 'Journey mapping failed';
+      const responseText = response.content.type === 'text' ? response.content.text : '';
 
-      const output = {
-        current_journey: {
-          emotional_arc: [
-            {
-              section: 'Verse 1',
-              emotion: 'contemplative',
-              intensity: 4,
-              transition_quality: 'smooth'
-            },
-            {
-              section: 'Chorus',
-              emotion: 'uplifting',
-              intensity: 7,
-              transition_quality: 'effective build'
-            }
-          ],
-          journey_analysis: 'Current emotional progression analysis',
-          strengths: ['Strong emotional build', 'Clear progression'],
-          weaknesses: ['Missing tension points', 'Could use more contrast']
-        },
-        optimized_journey: {
-          suggested_arc: [
-            {
-              section: 'Verse 1',
-              target_emotion: 'introspective',
-              target_intensity: 3,
-              transition_method: 'Gradual building through imagery'
-            },
-            {
-              section: 'Chorus',
-              target_emotion: 'triumphant',
-              target_intensity: 8,
-              transition_method: 'Dramatic musical and lyrical shift'
-            }
-          ],
-          optimization_rationale: 'Enhanced contrast and flow for maximum impact',
-          key_changes: [
-            'Increase emotional contrast between sections',
-            'Add tension-building elements',
-            'Strengthen resolution'
-          ]
-        },
-        enhancement_suggestions: [
-          {
-            area: 'Verse-Chorus Transition',
-            current_state: 'Adequate build',
-            suggested_improvement: 'Add pre-chorus tension',
-            implementation: 'Include rising musical tension and anticipatory lyrics'
-          }
-        ],
-        alternative_journeys: [
-          {
-            journey_type: 'Inverse Arc',
-            description: 'Start high energy, move to contemplation',
-            emotional_impact: 'Unexpected and memorable'
-          }
-        ]
-      };
+      let result;
+      try {
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No JSON found');
+        result = JSON.parse(jsonMatch[0]);
+      } catch (error) {
+        result = {
+          current_journey: {
+            emotional_arc: [],
+            journey_analysis: responseText || 'Journey mapping failed',
+            strengths: [],
+            weaknesses: []
+          },
+          optimized_journey: {
+            suggested_arc: [],
+            optimization_rationale: 'See analysis above',
+            key_changes: []
+          },
+          enhancement_suggestions: [],
+          alternative_journeys: []
+        };
+      }
 
       return {
         content: [{
           type: 'text',
-          text: `# Emotional Journey Analysis\n\n${mapping}\n\n## Journey Optimization\n${JSON.stringify(output, null, 2)}`
+          text: `# Emotional Journey Analysis\n\n` +
+            `## Current Journey\n${result.current_journey.journey_analysis}\n\n` +
+            `### Emotional Arc\n${result.current_journey.emotional_arc.map((a: any) =>
+              `**${a.section}**: ${a.emotion} (Intensity: ${a.intensity}/10) - ${a.transition_quality}`
+            ).join('\n')}\n\n` +
+            `**Strengths**: ${result.current_journey.strengths.join(', ')}\n**Weaknesses**: ${result.current_journey.weaknesses.join(', ')}\n\n` +
+            `## Optimized Journey\n${result.optimized_journey.optimization_rationale}\n\n` +
+            `### Suggested Arc\n${result.optimized_journey.suggested_arc.map((a: any) =>
+              `**${a.section}**: Target ${a.target_emotion} (Intensity: ${a.target_intensity}/10)\n*Transition*: ${a.transition_method}`
+            ).join('\n\n')}\n\n` +
+            `### Key Changes\n${result.optimized_journey.key_changes.map((c: string) => `- ${c}`).join('\n')}\n\n` +
+            `## Enhancement Suggestions\n${result.enhancement_suggestions.map((s: any) =>
+              `### ${s.area}\n**Current**: ${s.current_state}\n**Suggested**: ${s.suggested_improvement}\n**Implementation**: ${s.implementation}`
+            ).join('\n\n')}\n\n` +
+            `## Alternative Journeys\n${result.alternative_journeys.map((j: any) =>
+              `### ${j.journey_type}\n${j.description}\n**Emotional Impact**: ${j.emotional_impact}`
+            ).join('\n\n')}`
         }],
-        structuredContent: output
+        structuredContent: result
       };
     }
   );
