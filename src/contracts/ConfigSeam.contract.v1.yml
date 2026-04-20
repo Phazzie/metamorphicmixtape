@@ -31,8 +31,11 @@ configuration_points:
   - name: apiBaseUrl
     location: web/src/environments/environment.ts
     type: string
-    description: Base URL for HTTP API (frontend)
-    default: '' (relative URLs)
+    description: |
+      Base URL for HTTP API (frontend). Empty string means same-origin relative
+      requests (browser host serves both UI and API). Set an absolute URL when
+      the API runs on a different host/port.
+    default: '' (same-origin relative URLs)
     required: false
     example: "http://localhost:8080"
 
@@ -78,7 +81,8 @@ example_usage: |
 validation:
   - PORT must be valid port number (1-65535) if provided
   - LOG_LEVEL must be valid enum value if provided
-  - apiBaseUrl must be valid URL format if provided
+  - apiBaseUrl may be empty string for same-origin deployments
+  - apiBaseUrl must be valid absolute URL format if provided
 
 notes: |
   This seam documents environment configuration boundaries.

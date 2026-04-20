@@ -62,6 +62,13 @@ implementation:
   language: TypeScript
   framework: Angular 20
   location: web/src/app/services/tool-api.service.ts
+  endpoint:
+    method: POST
+    path: /tools/:name
+    notes: |
+      Tool execution uses POST /tools/:name.
+      GET /tools and GET /tools/:name are metadata endpoints and are outside
+      this execution seam's primary request path.
   dependencies:
     - "@angular/core": "^20.3.9"
     - "@angular/common/http": "^20.3.9"
