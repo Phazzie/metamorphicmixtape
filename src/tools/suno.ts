@@ -11,6 +11,7 @@ import type {
   GenerateSunoTagsInputV1,
   OptimizeSunoPromptInputV1
 } from '@metamorphicmixtape/contracts/suno';
+import { createAIMessage, parseToolResponse, formatToolOutput } from '../utils/tool-helpers.js';
 
 /**
  * Suno-Specific Tools

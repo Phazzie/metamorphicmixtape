@@ -11,6 +11,7 @@ import type {
   RefineLyricsInputV1,
   SongwritingCouncilInputV1
 } from '@metamorphicmixtape/contracts/songwriting';
+import { createAIMessage, parseToolResponse, formatToolOutput } from '../utils/tool-helpers.js';
 
 /**
  * Core Songwriting Tools
