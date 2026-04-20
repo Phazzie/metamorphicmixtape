@@ -1,0 +1,60 @@
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.app-header h1 {
+  margin: 0 0 1rem 0;
+  font-size: 1.75rem;
+}
+
+.main-nav {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.main-nav a {
+  color: rgba(255,255,255,0.9);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.main-nav a:hover {
+  background: rgba(255,255,255,0.1);
+  color: white;
+}
+
+.main-nav a.active {
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+
+.app-content {
+  flex: 1;
+  padding: 2rem 0;
+  background: #f5f7fa;
+}
+
+.app-footer {
+  background: #2c3e50;
+  color: rgba(255,255,255,0.7);
+  text-align: center;
+  padding: 1.5rem;
+  margin-top: auto;
+}
+
+.app-footer p {
+  margin: 0;
+}

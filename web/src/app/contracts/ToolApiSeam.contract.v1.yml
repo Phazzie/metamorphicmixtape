@@ -1,0 +1,100 @@
+# Seam-Driven Contract: ToolApiSeam v1
+# Purpose: Core HTTP seam for executing MCP tools via REST API
+# Version: 1
+# Last Updated: 2025-11-01
+
+seam:
+  name: ToolApiSeam
+  version: 1
+  description: |
+    Base HTTP adapter that communicates with the MCP server's REST API.
+    This seam handles tool execution, response parsing, and error handling.
+    All tool-specific services depend on this seam.
+
+inputs:
+  toolName:
+    type: string
+    description: The name of the MCP tool to execute (e.g., 'generate_lyrics')
+    required: true
+    example: "generate_lyrics"
+  
+  request:
+    type: TRequest (generic)
+    description: Tool-specific request payload matching the tool's input contract
+    required: true
+    example: |
+      {
+        "concept": "loneliness in cities",
+        "tone": "melancholic",
+        "style": "verse-chorus",
+        "length": "medium"
+      }
+
+outputs:
+  success:
+    type: TResponse (generic)
+    description: Parsed structured content from the MCP tool response
+    schema: |
+      Tool-specific response matching the tool's output contract
+    example: |
+      {
+        "lyrics": "[Verse 1]\nWalking through empty streets...",
+        "structure": "V1-C-V2-C-B-C",
+        "creative_notes": "Used urban imagery...",
+        "emotional_arc": "Starts isolated, builds to connection",
+        "suggested_refinements": ["Consider adding bridge", "Vary line lengths"]
+      }
+
+errors:
+  - code: HTTP_ERROR
+    description: Network or server error occurred
+    when: HTTP request fails or server returns error status
+    
+  - code: PARSE_ERROR
+    description: Unable to parse response content
+    when: Response lacks structuredContent and text parsing fails
+    
+  - code: NO_CONTENT_ERROR
+    description: Response contains no usable content
+    when: Response has neither structuredContent nor parseable text content
+
+implementation:
+  language: TypeScript
+  framework: Angular 20
+  location: web/src/app/services/tool-api.service.ts
+  dependencies:
+    - "@angular/core": "^20.3.9"
+    - "@angular/common/http": "^20.3.9"
+    - "rxjs": "~7.8.2"
+
+example_usage: |
+  // Inject the service
+  private toolApi = inject(ToolApiService);
+  
+  // Execute a tool
+  toolApi.executeTool<GenerateLyricsRequest, GenerateLyricsResponse>(
+    'generate_lyrics',
+    {
+      concept: 'loneliness in cities',
+      tone: 'melancholic',
+      style: 'verse-chorus',
+      length: 'medium'
+    }
+  ).subscribe({
+    next: (response) => console.log(response.lyrics),
+    error: (err) => console.error('Tool execution failed', err)
+  });
+
+validation:
+  - Input toolName must be non-empty string
+  - Request must match tool's input contract schema
+  - Response must contain either structuredContent or parseable text
+  - Observable must handle errors gracefully
+
+notes: |
+  This is the foundational seam for all tool interactions in the Angular UI.
+  All tool-specific services (SongwritingSeam, SunoSeam, AnalysisSeam) 
+  delegate to this seam for HTTP communication.
+  
+  The generic types TRequest and TResponse ensure type safety while allowing
+  flexibility for different tool contracts.

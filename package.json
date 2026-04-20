@@ -5,9 +5,19 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "npm run build:contracts && tsc",
+    "build:contracts": "npm run build --workspace=@metamorphicmixtape/contracts",
     "start": "node dist/index.js",
+    "start:http": "node dist/adapters/http.js",
     "dev": "tsc --watch",
+    "test": "npm run build && node --test tests/**/*.test.js",
+    "contract:test": "npm run build && node scripts/contract-test.mjs",
+    "validate:contracts": "node scripts/validate-seam-contracts.mjs",
+    "validate:versions": "node scripts/check-contract-versions.mjs",
+    "validate:all": "npm run validate:contracts && npm run validate:versions && npm run lint:contracts",
+    "lint:contracts": "node scripts/lint-zod-contracts.mjs",
+    "check:two-strike": "node scripts/check-two-strike-violations.mjs",
+    "docs:contracts": "node scripts/generate-contract-docs.mjs",
     "clean": "rimraf dist"
   },
   "keywords": [
@@ -19,8 +29,14 @@
   ],
   "author": "Suno MCP Developer",
   "license": "MIT",
+  "workspaces": [
+    "contracts/*"
+  ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "cors": "^2.8.5",
+    "express": "^5.0.1",
+    "zod-to-json-schema": "^3.24.1",
     "zod": "^3.22.0"
   },
   "devDependencies": {

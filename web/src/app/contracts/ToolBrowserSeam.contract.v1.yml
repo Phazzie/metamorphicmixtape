@@ -1,0 +1,123 @@
+# Seam-Driven Contract: ToolBrowserSeam v1
+# Purpose: Tool registry and metadata browsing seam
+# Version: 1
+# Last Updated: 2025-11-02
+
+seam:
+  name: ToolBrowserSeam
+  version: 1
+  description: |
+    Provides access to the tool registry for browsing available tools
+    and viewing their contracts. This seam queries the HTTP API's tool
+    discovery endpoints to retrieve tool metadata.
+
+tools:
+  - name: list_tools
+    description: Get list of all available tools
+    
+  - name: get_tool_contract
+    description: Get detailed contract for a specific tool
+
+# Tool: list_tools
+list_tools:
+  inputs:
+    # No inputs required
+
+  outputs:
+    tools:
+      type: array<ToolSummary>
+      description: List of available tools with summary information
+      schema: |
+        {
+          name: string,
+          title: string,
+          description: string
+        }
+      example: |
+        [
+          {
+            "name": "generate_lyrics",
+            "title": "Generate Song Lyrics",
+            "description": "Create original song lyrics..."
+          }
+        ]
+
+# Tool: get_tool_contract
+get_tool_contract:
+  inputs:
+    toolName:
+      type: string
+      required: true
+      description: Name of the tool to get contract for
+      example: "generate_lyrics"
+
+  outputs:
+    tool_contract:
+      type: ToolContractDetail
+      description: Complete tool contract with schemas
+      schema: |
+        {
+          name: string,
+          title: string,
+          description: string,
+          inputSchema: object (JSON Schema),
+          outputSchema?: object (JSON Schema)
+        }
+
+errors:
+  - code: TOOL_NOT_FOUND
+    description: Requested tool does not exist
+    when: Tool name not in registry
+    http_status: 404
+    
+  - code: API_ERROR
+    description: HTTP API request failed
+    when: Network error or server error
+    
+  - code: PARSE_ERROR
+    description: Unable to parse API response
+    when: Response format unexpected
+
+implementation:
+  language: TypeScript
+  framework: Angular 20
+  location: web/src/app/services/tool-browser.service.ts
+  dependencies:
+    - ToolApiSeam (contract v1) - for base HTTP functionality
+  models_location: web/src/app/models/tool-browser.models.ts
+
+example_usage: |
+  // Inject the service
+  private toolBrowser = inject(ToolBrowserService);
+  
+  // List all tools
+  toolBrowser.listTools().subscribe({
+    next: (tools) => {
+      console.log('Available tools:', tools);
+    },
+    error: (err) => console.error(err)
+  });
+  
+  // Get specific tool contract
+  toolBrowser.getToolContract('generate_lyrics').subscribe({
+    next: (contract) => {
+      console.log('Tool contract:', contract);
+      console.log('Input schema:', contract.inputSchema);
+    },
+    error: (err) => console.error(err)
+  });
+
+validation:
+  - toolName must be non-empty string
+  - API responses must match expected schema
+  - Error handling for network failures
+  - Error handling for 404 responses
+
+notes: |
+  This seam provides tool discovery and metadata functionality for the UI.
+  Unlike other seams that execute tools, this one only retrieves metadata.
+  
+  The tool browser component should ONLY use this service, never HttpClient directly.
+  This ensures proper separation of concerns and seam boundaries.
+  
+  URLs are constructed from environment.apiBaseUrl + endpoints.

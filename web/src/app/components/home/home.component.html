@@ -1,0 +1,42 @@
+<div class="home-container">
+  <section class="hero">
+    <h2>Welcome to Metamorphic Mixtape</h2>
+    <p class="tagline">AI-Powered Tools for Professional Songwriting</p>
+    <p class="description">
+      Leverage 16 sophisticated AI tools across meta-analysis, deep analysis, songwriting, and Suno integration.
+      Transform your creative process with intelligent assistance.
+    </p>
+  </section>
+
+  <section class="features-grid">
+    @for (feature of features; track feature.title) {
+      <a [routerLink]="feature.route" class="feature-card" [style.border-color]="feature.color">
+        <div class="feature-icon">{{ feature.icon }}</div>
+        <h3>{{ feature.title }}</h3>
+        <p>{{ feature.description }}</p>
+      </a>
+    }
+  </section>
+
+  <section class="capabilities">
+    <h3>Capabilities</h3>
+    <div class="capability-grid">
+      <div class="capability">
+        <strong>Meta-Analytical</strong>
+        <p>Extract patterns, generate constraints, bridge concepts</p>
+      </div>
+      <div class="capability">
+        <strong>Analysis</strong>
+        <p>Emotional archaeology, evolution tracking, pattern mining</p>
+      </div>
+      <div class="capability">
+        <strong>Songwriting</strong>
+        <p>Generate, refine, critique, and perfect your lyrics</p>
+      </div>
+      <div class="capability">
+        <strong>Suno Integration</strong>
+        <p>Format, tag, optimize, and analyze for Suno AI</p>
+      </div>
+    </div>
+  </section>
+</div>

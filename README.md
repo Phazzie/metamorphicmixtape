@@ -1,6 +1,18 @@
-# Suno MCP Server
+# Metamorphic Mixtape (Suno MCP Server)
 
 An **AI-first** MCP (Model Context Protocol) server for professional songwriting workflows with Suno AI. Provides sophisticated AI-powered tools for lyric creation, refinement, and Suno optimization.
+
+## 🎉 What's New in v2.0.0
+
+**Production-ready platform with comprehensive web UI:**
+- ✅ **Angular 20 Web UI** with songwriting studio, Suno formatter, and tool browser
+- ✅ **HTTP REST API** for integrations and external access
+- ✅ **Docker deployment** with CI/CD pipelines
+- ✅ **100% seam-driven** with 7 versioned contracts
+- ✅ **Zero technical debt** (audited and verified)
+- ✅ **Zero security vulnerabilities**
+
+See [CHANGELOG.md](./CHANGELOG.md) for full details.
 
 ## Overview
 
@@ -67,6 +79,47 @@ npm run build
 4. **Start the server** (for testing):
 ```bash
 npm start
+```
+
+### HTTP Adapter & Web UI
+
+To expose the MCP tools over HTTP and serve the Angular dashboard:
+
+```bash
+npm run build
+npm run build --prefix web -- --configuration=production
+npm run start:http
+```
+
+The adapter listens on port `8080` by default. Visit `http://localhost:8080` to open the Angular interface. The following REST endpoints are available:
+
+- `GET /health` – service readiness probe
+- `GET /tools` – list of registered tool contracts
+- `GET /tools/:name` – detailed contract metadata
+- `POST /tools/:name` – invoke a tool with runtime validation
+
+### Docker Image
+
+Build a production container that bundles the HTTP adapter and Angular assets:
+
+```bash
+docker build -t metamorphic-mixtape:local .
+docker run -p 8080:8080 metamorphic-mixtape:local
+```
+
+### DigitalOcean App Platform
+
+Deploy the container to DigitalOcean using the provided spec and deployment helper:
+
+```bash
+export DIGITALOCEAN_ACCESS_TOKEN=... # personal access token
+./scripts/deploy-digitalocean.sh infra/digitalocean/app-spec.yaml ghcr.io/OWNER/REPO:latest
+```
+
+After deployment, validate the seam with the smoke test script:
+
+```bash
+node scripts/smoke-test.mjs https://your-app-url
 ```
 
 ## VS Code Integration

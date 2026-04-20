@@ -1,0 +1,48 @@
+<div class="tool-browser">
+  <h2>🔧 Tool Browser</h2>
+  <p class="subtitle">Explore all 16 AI songwriting tools</p>
+
+  @if (loading()) {
+    <div class="loading">Loading tools...</div>
+  }
+
+  @if (error()) {
+    <div class="error">{{ error() }}</div>
+  }
+
+  @if (hasTools()) {
+    <div class="tools-grid">
+      @for (tool of tools(); track tool.name) {
+        <div class="tool-card" (click)="viewContract(tool)" [class.selected]="selectedTool()?.name === tool.name">
+          <h3>{{ tool.title }}</h3>
+          <p class="tool-name">{{ tool.name }}</p>
+          <p class="tool-description">{{ tool.description }}</p>
+        </div>
+      }
+    </div>
+  }
+
+  @if (selectedContract(); as contract) {
+    <div class="contract-details">
+      <h3>Contract Details: {{ contract.title }}</h3>
+      <div class="contract-section">
+        <h4>Tool Name</h4>
+        <code>{{ contract.name }}</code>
+      </div>
+      <div class="contract-section">
+        <h4>Description</h4>
+        <p>{{ contract.description }}</p>
+      </div>
+      <div class="contract-section">
+        <h4>Input Schema</h4>
+        <pre>{{ contract.inputSchema | json }}</pre>
+      </div>
+      @if (contract.outputSchema) {
+        <div class="contract-section">
+          <h4>Output Schema</h4>
+          <pre>{{ contract.outputSchema | json }}</pre>
+        </div>
+      }
+    </div>
+  }
+</div>

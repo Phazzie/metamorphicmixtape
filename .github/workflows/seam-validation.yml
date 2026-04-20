@@ -1,0 +1,120 @@
+name: Seam-Driven Contract Validation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    paths:
+      - 'contracts/**'
+      - 'src/tools/**'
+      - 'src/contracts/**'
+      - '.github/workflows/seam-validation.yml'
+
+jobs:
+  validate-contracts:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build contracts workspace
+        run: npm run build:contracts
+
+      - name: Validate contract structure
+        run: node scripts/validate-seam-contracts.mjs
+
+      - name: Check contract-tool alignment
+        run: npm run contract:test
+
+      - name: Verify contract versions
+        run: node scripts/check-contract-versions.mjs
+
+  lint-contracts:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install yamllint
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y yamllint
+
+      - name: Lint Zod contract schemas
+        run: |
+          echo "Checking for required contract properties..."
+          node scripts/lint-zod-contracts.mjs
+
+  check-breaking-changes:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build contracts (base)
+        run: |
+          git checkout ${{ github.event.pull_request.base.ref }}
+          npm run build:contracts
+          mkdir -p /tmp/base-contracts
+          cp -r contracts/tool-contracts/dist /tmp/base-contracts/
+
+      - name: Build contracts (head)
+        run: |
+          git checkout ${{ github.event.pull_request.head.ref }}
+          npm run build:contracts
+
+      - name: Detect breaking changes
+        run: node scripts/detect-contract-breaking-changes.mjs /tmp/base-contracts/dist contracts/tool-contracts/dist
+
+  verify-two-strike-rule:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for repeated fixes
+        run: |
+          echo "Checking commit history for repeated fixes to same files..."
+          node scripts/check-two-strike-violations.mjs

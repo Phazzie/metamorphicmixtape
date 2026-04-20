@@ -1,0 +1,171 @@
+# Seam-Driven Contract: SongwritingSeam v1
+# Purpose: Songwriting tools seam for lyric generation and refinement
+# Version: 1
+# Last Updated: 2025-11-01
+
+seam:
+  name: SongwritingSeam
+  version: 1
+  description: |
+    Provides access to songwriting tools: generate_lyrics and refine_lyrics.
+    This seam translates UI requests into MCP tool calls via ToolApiSeam.
+
+tools:
+  - name: generate_lyrics
+    description: Generate original lyrics from a concept
+    
+  - name: refine_lyrics
+    description: Improve and optimize existing lyrics
+
+# Tool: generate_lyrics
+generate_lyrics:
+  inputs:
+    concept:
+      type: string
+      required: true
+      description: The core idea, theme, or story
+      example: "loneliness in cities"
+    
+    style:
+      type: enum
+      required: true
+      values: ['verse-chorus', 'narrative', 'abstract', 'free-form']
+      default: 'verse-chorus'
+      example: "verse-chorus"
+    
+    tone:
+      type: enum
+      required: true
+      values: ['melancholic', 'uplifting', 'angry', 'reflective', 'playful', 'dark', 'hopeful', 'bittersweet']
+      example: "melancholic"
+    
+    length:
+      type: enum
+      required: true
+      values: ['short', 'medium', 'long']
+      default: 'medium'
+      example: "medium"
+    
+    constraints:
+      type: string
+      required: false
+      description: Optional creative constraints
+      example: "use water imagery"
+    
+    reference_style:
+      type: string
+      required: false
+      description: Optional artist/song style reference
+      example: "like Bon Iver"
+
+  outputs:
+    lyrics:
+      type: string
+      description: Complete generated lyrics with structure markers
+      
+    structure:
+      type: string
+      description: Song structure breakdown
+      example: "V1-C-V2-C-B-C"
+      
+    creative_notes:
+      type: string
+      description: Explanation of creative choices
+      
+    emotional_arc:
+      type: string
+      description: Description of emotional journey
+      
+    suggested_refinements:
+      type: array<string>
+      description: Ideas for further refinement
+
+# Tool: refine_lyrics
+refine_lyrics:
+  inputs:
+    lyrics:
+      type: string
+      required: true
+      description: The lyrics to refine
+      
+    focus_areas:
+      type: array<string>
+      required: true
+      description: Areas to focus on
+      example: ["rhythm", "imagery"]
+      
+    intensity:
+      type: enum
+      required: true
+      values: ['light', 'moderate', 'aggressive']
+      example: "moderate"
+      
+    preserve_structure:
+      type: boolean
+      required: true
+      description: Whether to keep current structure
+      example: true
+
+  outputs:
+    refined_lyrics:
+      type: string
+      description: Improved lyrics
+      
+    changes_explained:
+      type: array<string>
+      description: List of changes made
+      
+    improvements:
+      type: string
+      description: Summary of improvements
+      
+    further_suggestions:
+      type: array<string>
+      description: Additional improvement ideas
+
+errors:
+  - code: TOOL_EXECUTION_ERROR
+    description: MCP tool execution failed
+    when: ToolApiSeam returns error
+    
+  - code: VALIDATION_ERROR
+    description: Input validation failed
+    when: Request doesn't match contract schema
+
+implementation:
+  language: TypeScript
+  framework: Angular 20
+  location: web/src/app/services/songwriting.service.ts
+  dependencies:
+    - ToolApiSeam (contract v1)
+    - songwriting.models.ts
+  models_location: web/src/app/models/songwriting.models.ts
+
+example_usage: |
+  // Inject the service
+  private songwriting = inject(SongwritingService);
+  
+  // Generate lyrics
+  songwriting.generateLyrics({
+    concept: 'loneliness in cities',
+    style: 'verse-chorus',
+    tone: 'melancholic',
+    length: 'medium',
+    constraints: 'use water imagery'
+  }).subscribe({
+    next: (response) => {
+      console.log('Generated:', response.lyrics);
+      console.log('Structure:', response.structure);
+    },
+    error: (err) => console.error(err)
+  });
+
+validation:
+  - All required fields must be present
+  - Enum values must match allowed values
+  - Lyrics must be non-empty string for refine_lyrics
+  - focus_areas must have at least one item for refine_lyrics
+
+notes: |
+  This seam implements the contract defined in contracts/tool-contracts/src/songwriting.ts
+  The models match exactly with the backend Zod schemas to ensure type safety.

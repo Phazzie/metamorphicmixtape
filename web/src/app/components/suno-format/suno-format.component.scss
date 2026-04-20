@@ -1,0 +1,185 @@
+.suno-format {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.header {
+  margin-bottom: 2rem;
+
+  h2 {
+    font-size: 2rem;
+    margin: 0 0 0.5rem 0;
+    color: #2c3e50;
+  }
+
+  .subtitle {
+    color: #7f8c8d;
+    margin: 0;
+  }
+}
+
+.format-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-weight: 600;
+    color: #2c3e50;
+  }
+
+  textarea, select {
+    padding: 0.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: #9f7aea;
+    }
+
+    &.error {
+      border-color: #e53e3e;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 200px;
+  }
+
+  .hint {
+    color: #7f8c8d;
+    font-size: 0.875rem;
+  }
+}
+
+.error-message {
+  color: #e53e3e;
+  font-size: 0.875rem;
+}
+
+.submit-button {
+  padding: 1rem;
+  background: #9f7aea;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover:not(:disabled) {
+    background: #805ad5;
+  }
+
+  &:disabled {
+    background: #cbd5e0;
+    cursor: not-allowed;
+  }
+}
+
+.error-banner {
+  padding: 1rem;
+  background: #fee;
+  border-left: 4px solid #e53e3e;
+  border-radius: 4px;
+  margin-bottom: 2rem;
+  color: #c53030;
+}
+
+.result-section {
+  h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: #2c3e50;
+  }
+}
+
+.formatted-lyrics {
+  margin-bottom: 2rem;
+  position: relative;
+
+  h4 {
+    font-size: 1.125rem;
+    margin-bottom: 0.75rem;
+    color: #34495e;
+  }
+
+  .lyrics-text {
+    padding: 1.5rem;
+    background: #ffffff;
+    border: 2px solid #9f7aea;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    margin-bottom: 1rem;
+  }
+
+  .copy-button {
+    padding: 0.75rem 1.5rem;
+    background: #9f7aea;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+      background: #805ad5;
+    }
+  }
+}
+
+.metadata-card {
+  padding: 1.25rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+
+  h4 {
+    font-size: 1.125rem;
+    margin: 0 0 0.75rem 0;
+    color: #9f7aea;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 1.5rem;
+    color: #4a5568;
+    line-height: 1.6;
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  &.tips {
+    background: #f0fdf4;
+    border-left: 4px solid #10b981;
+
+    h4 {
+      color: #059669;
+    }
+  }
+}

@@ -1,0 +1,130 @@
+# Seam-Driven Contract: LLMSeam v1
+# Purpose: Large Language Model interaction seam via MCP SDK
+# Version: 1
+# Last Updated: 2025-11-02
+
+seam:
+  name: LLMSeam
+  version: 1
+  description: |
+    Boundary between tool implementations and the AI model (LLM) accessed
+    via the MCP SDK's server.createMessage() method. This seam abstracts
+    AI sampling requests for all tool implementations.
+
+inputs:
+  messages:
+    type: array<Message>
+    required: true
+    description: Array of conversation messages to send to LLM
+    schema: |
+      {
+        role: 'user' | 'assistant' | 'system',
+        content: { type: 'text', text: string }
+      }
+    example: |
+      [
+        {
+          role: 'user',
+          content: {
+            type: 'text',
+            text: 'Generate lyrics about loneliness in cities...'
+          }
+        }
+      ]
+  
+  maxTokens:
+    type: number
+    required: false
+    default: 1200
+    description: Maximum tokens for LLM response
+    example: 1500
+  
+  temperature:
+    type: number
+    required: false
+    default: 0.7
+    description: Sampling temperature (0.0-1.0)
+    example: 0.8
+
+outputs:
+  content:
+    type: string
+    description: Generated text response from LLM
+    
+  model:
+    type: string
+    description: Model used for generation
+    
+  stopReason:
+    type: string
+    description: Why generation stopped
+    values: ['endTurn', 'stopSequence', 'maxTokens']
+
+errors:
+  - code: LLM_REQUEST_FAILED
+    description: Failed to send request to LLM
+    when: Network error or MCP SDK error
+    
+  - code: LLM_TIMEOUT
+    description: LLM request exceeded timeout
+    when: Response took too long
+    
+  - code: LLM_RATE_LIMIT
+    description: Rate limit exceeded
+    when: Too many requests
+    
+  - code: LLM_INVALID_RESPONSE
+    description: LLM returned unexpected format
+    when: Response parsing failed
+
+implementation:
+  language: TypeScript
+  framework: Node.js + MCP SDK
+  location: src/tools/*.ts (used in all tool implementations)
+  dependencies:
+    - "@modelcontextprotocol/sdk": "^0.6.2"
+  external_service: AI Model (via MCP host application)
+
+example_usage: |
+  // In tool implementation
+  import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+  
+  async function generateLyrics(server: McpServer, concept: string) {
+    const response = await server.server.createMessage({
+      messages: [
+        {
+          role: 'user',
+          content: {
+            type: 'text',
+            text: `Generate lyrics about: ${concept}`
+          }
+        }
+      ],
+      maxTokens: 1200
+    });
+    
+    return response.content.text;
+  }
+
+validation:
+  - messages array must not be empty
+  - maxTokens must be positive integer
+  - temperature must be 0.0-1.0
+  - Response must contain content
+
+notes: |
+  This is a critical external seam - the AI model is provided by the MCP host
+  application (VS Code, Claude Desktop, etc.) and is not under our control.
+  
+  All tool implementations depend on this seam for AI-powered functionality.
+  Error handling must be robust as LLM availability can vary.
+  
+  Current usage in:
+  - src/tools/songwriting.ts (4 tools)
+  - src/tools/meta.ts (4 tools)
+  - src/tools/analysis.ts (4 tools)
+  - src/tools/suno.ts (4 tools)
+  - src/tools/collaboration.ts (2 tools)
+  
+  This seam documents the boundary but doesn't require a TypeScript wrapper
+  since MCP SDK provides the abstraction.
