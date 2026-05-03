@@ -7,7 +7,7 @@
     "start": "ng serve",
     "build": "ng build",
     "test": "ng test",
-    "lint": "ng lint"
+    "lint": "node scripts/lint.mjs"
   },
   "dependencies": {
     "@angular/animations": "^20.3.9",
