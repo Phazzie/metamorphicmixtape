@@ -11,6 +11,7 @@ import type {
   RefineLyricsInputV1,
   SongwritingCouncilInputV1
 } from '@metamorphicmixtape/contracts/songwriting';
+import { createAIMessage, parseToolResponse, formatToolOutput } from '../utils/tool-helpers.js';
 
 /**
  * Core Songwriting Tools
@@ -141,39 +142,30 @@ FORMAT YOUR RESPONSE AS JSON:
 
 Be respectful of the original work while making it genuinely better. Balance craft with authenticity.`;
 
-      const response = await server.server.createMessage({
-        messages: [{ role: 'user', content: { type: 'text', text: prompt } }],
-        maxTokens: 2000
-      });
-
-      const responseText = response.content.type === 'text' ? response.content.text : '';
+      const responseText = await createAIMessage(server, prompt, 2000, 'refine_lyrics');
       
-      let result;
-      try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('No JSON found');
-        result = JSON.parse(jsonMatch[0]);
-      } catch (error) {
-        result = {
+      const result = parseToolResponse(
+        responseText,
+        {
           refined_lyrics: responseText,
           changes_made: [],
           overall_assessment: 'AI response could not be fully parsed. See refined lyrics above.',
           further_suggestions: ['Review manually and apply additional refinements as needed']
-        };
-      }
+        },
+        'refine_lyrics'
+      );
 
-      return {
-        content: [{
-          type: 'text',
-          text: `# Refined Lyrics\n\n${result.refined_lyrics}\n\n` +
-                `## Changes Made\n\n${result.changes_made.map((c: any) => 
-                  `**Original**: "${c.original}"\n**Revised**: "${c.revised}"\n**Reason**: ${c.reason}\n`
-                ).join('\n')}\n\n` +
-                `## Overall Assessment\n${result.overall_assessment}\n\n` +
-                `## Further Suggestions\n${result.further_suggestions.map((s: string) => `- ${s}`).join('\n')}`
-        }],
-        structuredContent: result
-      };
+      return formatToolOutput(
+        [
+          `# Refined Lyrics\n\n${result.refined_lyrics}`,
+          `## Changes Made\n\n${result.changes_made.map((c: any) => 
+            `**Original**: "${c.original}"\n**Revised**: "${c.revised}"\n**Reason**: ${c.reason}\n`
+          ).join('\n')}`,
+          `## Overall Assessment\n${result.overall_assessment}`,
+          `## Further Suggestions\n${result.further_suggestions.map((s: string) => `- ${s}`).join('\n')}`
+        ],
+        result
+      );
     }
   );
 
@@ -234,20 +226,11 @@ FORMAT YOUR RESPONSE AS JSON:
 
 Make each persona's voice distinct and authentic. They should sometimes disagree - that's valuable.`;
 
-      const response = await server.server.createMessage({
-        messages: [{ role: 'user', content: { type: 'text', text: prompt } }],
-        maxTokens: 2000
-      });
-
-      const responseText = response.content.type === 'text' ? response.content.text : '';
+      const responseText = await createAIMessage(server, prompt, 2000, 'songwriting_council');
       
-      let result;
-      try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('No JSON found');
-        result = JSON.parse(jsonMatch[0]);
-      } catch (error) {
-        result = {
+      const result = parseToolResponse(
+        responseText,
+        {
           perspectives: personas.map(p => ({
             persona: p,
             feedback: 'Council feedback is in the full response above.',
@@ -256,22 +239,22 @@ Make each persona's voice distinct and authentic. They should sometimes disagree
           consensus_points: [],
           conflicts: [],
           synthesis: responseText
-        };
-      }
+        },
+        'songwriting_council'
+      );
 
-      return {
-        content: [{
-          type: 'text',
-          text: `# Songwriting Council Feedback\n\n` +
-                `## Council Members\n\n${result.perspectives.map((p: any) => 
-                  `### ${p.persona.toUpperCase()}\n\n${p.feedback}\n\n**Suggestions**:\n${p.suggestions.map((s: string) => `- ${s}`).join('\n')}\n`
-                ).join('\n')}\n\n` +
-                `## Consensus Points\n${result.consensus_points.map((c: string) => `- ${c}`).join('\n')}\n\n` +
-                `## Creative Tensions (Disagreements)\n${result.conflicts.map((c: string) => `- ${c}`).join('\n')}\n\n` +
-                `## Synthesis\n${result.synthesis}`
-        }],
-        structuredContent: result
-      };
+      return formatToolOutput(
+        [
+          `# Songwriting Council Feedback`,
+          `## Council Members\n\n${result.perspectives.map((p: any) => 
+            `### ${p.persona.toUpperCase()}\n\n${p.feedback}\n\n**Suggestions**:\n${p.suggestions.map((s: string) => `- ${s}`).join('\n')}\n`
+          ).join('\n')}`,
+          `## Consensus Points\n${result.consensus_points.map((c: string) => `- ${c}`).join('\n')}`,
+          `## Creative Tensions (Disagreements)\n${result.conflicts.map((c: string) => `- ${c}`).join('\n')}`,
+          `## Synthesis\n${result.synthesis}`
+        ],
+        result
+      );
     }
   );
 
@@ -334,20 +317,11 @@ FORMAT YOUR RESPONSE AS JSON:
 
 Be the critical friend every artist needs but few have.`;
 
-      const response = await server.server.createMessage({
-        messages: [{ role: 'user', content: { type: 'text', text: prompt } }],
-        maxTokens: 1500
-      });
-
-      const responseText = response.content.type === 'text' ? response.content.text : '';
+      const responseText = await createAIMessage(server, prompt, 1500, 'devils_advocate');
       
-      let result;
-      try {
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('No JSON found');
-        result = JSON.parse(jsonMatch[0]);
-      } catch (error) {
-        result = {
+      const result = parseToolResponse(
+        responseText,
+        {
           challenging_questions: [{ 
             question: 'See full response for challenging questions',
             why_it_matters: 'AI response format could not be parsed'
@@ -356,25 +330,25 @@ Be the critical friend every artist needs but few have.`;
           hidden_opportunities: [],
           alternative_approaches: [],
           final_challenge: responseText
-        };
-      }
+        },
+        'devils_advocate'
+      );
 
-      return {
-        content: [{
-          type: 'text',
-          text: `# Devil's Advocate Analysis\n\n` +
-                `## Challenging Questions\n\n${result.challenging_questions.map((q: any) => 
-                  `**Q**: ${q.question}\n**Why It Matters**: ${q.why_it_matters}\n`
-                ).join('\n')}\n\n` +
-                `## Potential Weak Points\n\n${result.potential_weak_points.map((w: any) => 
-                  `**Issue**: ${w.issue}\n**Why Problematic**: ${w.why_problematic}\n**How to Address**: ${w.how_to_address}\n`
-                ).join('\n')}\n\n` +
-                `## Hidden Opportunities\n${result.hidden_opportunities.map((h: string) => `- ${h}`).join('\n')}\n\n` +
-                `## Alternative Approaches\n${result.alternative_approaches.map((a: string) => `- ${a}`).join('\n')}\n\n` +
-                `## The Big Challenge\n\n${result.final_challenge}`
-        }],
-        structuredContent: result
-      };
+      return formatToolOutput(
+        [
+          `# Devil's Advocate Analysis`,
+          `## Challenging Questions\n\n${result.challenging_questions.map((q: any) => 
+            `**Q**: ${q.question}\n**Why It Matters**: ${q.why_it_matters}\n`
+          ).join('\n')}`,
+          `## Potential Weak Points\n\n${result.potential_weak_points.map((w: any) => 
+            `**Issue**: ${w.issue}\n**Why Problematic**: ${w.why_problematic}\n**How to Address**: ${w.how_to_address}\n`
+          ).join('\n')}`,
+          `## Hidden Opportunities\n${result.hidden_opportunities.map((h: string) => `- ${h}`).join('\n')}`,
+          `## Alternative Approaches\n${result.alternative_approaches.map((a: string) => `- ${a}`).join('\n')}`,
+          `## The Big Challenge\n\n${result.final_challenge}`
+        ],
+        result
+      );
     }
   );
 }
