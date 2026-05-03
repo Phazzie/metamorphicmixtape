@@ -15,3 +15,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: Rosentic/rosentic-action@v1
+        with:
+          mode: audit
+          scan-mode: pr
+          stale-days: 30
