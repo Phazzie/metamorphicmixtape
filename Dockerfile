@@ -10,18 +10,23 @@ RUN npm run build -- --configuration=production
 FROM node:20 AS server-builder
 WORKDIR /app
 COPY package.json package-lock.json* ./
+COPY contracts/tool-contracts/package.json ./contracts/tool-contracts/package.json
 RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
-COPY . ./
+COPY contracts ./contracts
+COPY src ./src
+COPY scripts ./scripts
+COPY tsconfig.json ./
 RUN npm run build
 
 # Stage 3: Runtime image
 FROM node:20-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=server-builder /app/package.json ./
-COPY --from=server-builder /app/package-lock.json* ./
+COPY package.json package-lock.json* ./
+COPY contracts/tool-contracts/package.json ./contracts/tool-contracts/package.json
 RUN if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi
 COPY --from=server-builder /app/dist ./dist
-COPY --from=web-builder /app/web/dist ./public
+COPY --from=server-builder /app/contracts/tool-contracts/dist ./contracts/tool-contracts/dist
+COPY --from=web-builder /app/web/dist/metamorphic-mixtape-web ./public
 EXPOSE 8080
 CMD ["node", "dist/adapters/http.js"]
