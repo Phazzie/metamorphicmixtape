@@ -8,9 +8,21 @@ import { registerSunoTools } from '../tools/suno.js';
 import { registerCollaborationTools } from '../tools/collaboration.js';
 import { ToolContract } from './types.js';
 
+type RawToolSchema = z.ZodObject<Record<string, z.ZodTypeAny>> | Record<string, z.ZodTypeAny> | undefined;
+
+type ToolRegistrationConfig = {
+  title?: string;
+  description?: string;
+  inputSchema?: RawToolSchema;
+  outputSchema?: RawToolSchema;
+};
+
+type ToolCallback = (args: unknown, extra?: unknown) => unknown | Promise<unknown>;
+type RegisterTool = (name: string, config: ToolRegistrationConfig, callback: ToolCallback) => unknown;
+
 export interface RegisteredTool {
   contract: ToolContract;
-  callback: (args: any) => Promise<any>;
+  callback: (args: unknown) => Promise<unknown>;
 }
 
 export interface ContractRegistry {
@@ -18,8 +30,43 @@ export interface ContractRegistry {
   tools: Map<string, RegisteredTool>;
 }
 
+function normalizeSchema(schema: RawToolSchema): z.ZodObject<Record<string, z.ZodTypeAny>> | undefined {
+  if (!schema) {
+    return undefined;
+  }
+
+  if (schema instanceof z.ZodObject) {
+    return schema as z.ZodObject<Record<string, z.ZodTypeAny>>;
+  }
+
+  return z.object(schema as Record<string, z.ZodTypeAny>);
+}
+
 export async function initializeContractRegistry(): Promise<ContractRegistry> {
   const server = new McpServer({ name: 'metamorphic-mixtape', version: '1.0.0' });
+  const tools = new Map<string, RegisteredTool>();
+  const serverWithRegister = server as unknown as { registerTool: RegisterTool };
+  const registerTool = serverWithRegister.registerTool.bind(server) as RegisterTool;
+
+  serverWithRegister.registerTool = (name, config, callback) => {
+    const registration = registerTool(name, config, callback);
+    const inputSchema = normalizeSchema(config.inputSchema);
+
+    if (inputSchema && typeof callback === 'function') {
+      tools.set(name, {
+        contract: {
+          name,
+          title: config.title ?? name,
+          description: config.description ?? '',
+          inputSchema,
+          outputSchema: normalizeSchema(config.outputSchema)
+        },
+        callback: async (args: unknown) => callback(args)
+      });
+    }
+
+    return registration;
+  };
 
   await registerSongwritingTools(server);
   await registerAnalysisTools(server);
@@ -27,37 +74,8 @@ export async function initializeContractRegistry(): Promise<ContractRegistry> {
   await registerSunoTools(server);
   await registerCollaborationTools(server);
 
-  const rawTools = (server as unknown as { _registeredTools: Record<string, any> })._registeredTools;
-  const tools = new Map<string, RegisteredTool>();
-
-  for (const [name, tool] of Object.entries(rawTools)) {
-    if (!tool || typeof tool !== 'object') {
-      continue;
-    }
-
-    const inputSchema = tool.inputSchema as z.ZodObject<Record<string, z.ZodTypeAny>> | undefined;
-
-    if (!inputSchema) {
-      continue;
-    }
-
-    const contract: ToolContract = {
-      name,
-      title: tool.title ?? name,
-      description: tool.description ?? '',
-      inputSchema,
-      outputSchema: tool.outputSchema as z.ZodObject<Record<string, z.ZodTypeAny>> | undefined
-    };
-
-    tools.set(name, {
-      contract,
-      callback: tool.callback as (args: any) => Promise<any>
-    });
-  }
-
   return {
     server,
     tools
   };
 }
-
