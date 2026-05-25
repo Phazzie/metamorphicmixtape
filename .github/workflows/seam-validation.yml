@@ -2,7 +2,7 @@ name: Seam-Driven Contract Validation
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   pull_request:
     paths:
       - 'contracts/**'
