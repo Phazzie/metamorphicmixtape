@@ -10,7 +10,7 @@
     "start": "node dist/index.js",
     "start:http": "node dist/adapters/http.js",
     "dev": "tsc --watch",
-    "test": "npm run build && node --test tests/**/*.test.js",
+    "test": "npm run build && node --test tests",
     "contract:test": "npm run build && node scripts/contract-test.mjs",
     "validate:contracts": "node scripts/validate-seam-contracts.mjs",
     "validate:versions": "node scripts/check-contract-versions.mjs",
