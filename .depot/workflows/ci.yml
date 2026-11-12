@@ -1,0 +1,129 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: depot-ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            web/package-lock.json
+
+      - name: Install server dependencies
+        run: npm ci
+
+      - name: Build server
+        run: npm run build
+
+      - name: Install web dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Build Angular client
+        working-directory: web
+        run: npm run build -- --configuration=production
+
+  test:
+    runs-on: depot-ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install server dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+  contract-tests:
+    runs-on: depot-ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install server dependencies
+        run: npm ci
+
+      - name: Run contract tests
+        run: npm run contract:test
+
+  validate:
+    runs-on: depot-ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install server dependencies
+        run: npm ci
+
+      - name: Validate seam contracts
+        run: npm run validate:all
+
+      - name: Check two-strike history
+        run: node scripts/check-two-strike-violations.mjs
+
+      - name: Detect contract breaking changes
+        if: github.event_name == 'pull_request'
+        run: |
+          set -eu
+          base_ref="${{ github.base_ref }}"
+          git fetch origin "$base_ref"
+          git checkout "origin/${base_ref}" --detach
+          npm run build:contracts
+          rm -rf /tmp/base-contracts
+          mkdir -p /tmp/base-contracts
+          cp -a contracts/tool-contracts/dist /tmp/base-contracts/dist
+          git checkout "${{ github.sha }}"
+          npm run build:contracts
+          node scripts/detect-contract-breaking-changes.mjs /tmp/base-contracts/dist contracts/tool-contracts/dist
+
+  docker-build:
+    runs-on: depot-ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image without pushing
+        run: docker build -t metamorphic-mixtape:ci .
+
+  ai-review:
+    if: github.event_name == 'pull_request'
+    runs-on: depot-ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Grok review
+        env:
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+        run: node scripts/ai-review.mjs
